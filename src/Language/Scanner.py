@@ -154,7 +154,7 @@ t_TK_path     = rf'(((\.\.|\.)?\/)*{m["ID1"]})+(\.{m["EXT"]})|\"(((\.\.|\.)?\/)*
 t_TK_equ      = r'\='
 
 def t_TK_id(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
+    r'[a-zA-Z_0-9]+'
     t.type = reserveds.get(t.value.lower(), 'TK_id') 
     return t
 
