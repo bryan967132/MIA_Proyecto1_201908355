@@ -1,0 +1,28 @@
+# Creación de Disco1 (10 MB)
+mkdisk -size=10 -unit=M -path="../Disks/Disco1.dsk"
+
+# Creación de Partición1 en Disco1 (3 MB)
+fdisk -Path="../Disks/Disco1.dsk" -Unit=M  -name=Particion1 -size=3
+# Creación de Partición1 en Disco1 (512 KB)
+fdisk -path="../Disks/Disco1.dsk" -unit=K -name=Particion2 -size=512
+# Creación de Partición1 en Disco1 (2 MB)
+fdisk -path="../Disks/Disco1.dsk" -unit=M -Name=Particion3 -SIZE=2
+# Creación de Partición1 en Disco1 (1 MB)
+fdisk -path="../Disks/Disco1.dsk" -unit=m -size=1 -name=Particion4
+
+# Eliminación de Particion2 en Disco1
+fdisk -path="../Disks/Disco1.dsk" -name=Particion2 -delete=full
+
+# Agregar Espacio a Particion1 en Disco1 (1 MB)
+fdisk -Path="../Disks/Disco1.dsk" -Unit=M  -name=Particion1 -add=1
+# Agregar Espacio a Particion1 en Disco1 (256 KB)
+fdisk -Path="../Disks/Disco1.dsk" -Unit=K  -name=Particion1 -add=256
+
+# Agregar Espacio a Particion1 en Disco1 (512 KB)
+fdisk -Path="../Disks/Disco1.dsk" -Unit=K  -name=Particion1 -add=512
+
+# Agregar Espacio a Particion1 en Disco1 (1 MB)
+fdisk -Path="../Disks/Disco1.dsk" -name=Particion3 -add=1
+
+# Generación de Reporte de Disco1
+rep
