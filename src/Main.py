@@ -1,6 +1,5 @@
 from Language.Parser import *
 
-
 def menu():
     print()
     print('Proyecto 1')
