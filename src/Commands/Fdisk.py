@@ -10,7 +10,7 @@ class Fdisk:
             if self.__validateParamsDelete():
                 self.__deletePartition()
             else:
-                print(' ->  Error fdisk: Faltan parámetros obligatorios para crear la partición.')
+                print(' ->  Error fdisk: Faltan parámetros obligatorios para eliminar la partición.')
             return
         if self.__isAdd():
             if self.__validateParamsAdd():
@@ -85,6 +85,7 @@ class Fdisk:
                     lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
                     existPartition = True
                     indexPartition = i
+                    break
             if existPartition:
                 nextNoEmptyByte = lastNoEmptyByte
                 for i in range(indexPartition + 1, len(mbr.partitions)):
@@ -102,7 +103,16 @@ class Fdisk:
                         file.write(mbr.encode())
                     return
                 else:
-                    pass
+                    bytesAdds = self.params['add'] * units
+                    lastSpace = mbr.size - lastNoEmptyByte
+                    if bytesAdds > lastSpace:
+                        print(' ->  Error fdisk: Intenta agregar más espacio del disponible después de la partición.')
+                        return
+                    mbr.partitions[indexPartition].size += bytesAdds
+                    with open(self.params['path'], 'r+b') as file:
+                        file.seek(0)
+                        file.write(mbr.encode())
+                    return
             print(' ->  Error fdisk: No existe la partición a la que se intentó agregar o quitar espacio.')
 
     def __createPartition(self):
@@ -131,6 +141,7 @@ class Fdisk:
             readed_bytes = file.read(127)
             mbr = MBR.decode(readed_bytes)
             self.params['fit'] = self.params['fit'][:1]
+            disponible = []
             for i in range(len(mbr.partitions)):
                 if not mbr.partitions[i].status:
                     start = 128
