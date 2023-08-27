@@ -12,7 +12,6 @@ class Rep:
             mbr = MBR.decode(readed_bytes)
             isThereEmpty = False
             lastNoEmptyByte = 127
-
             dotParts = ''
             ocuppedCells = 10
             for i in range(len(mbr.partitions)):
