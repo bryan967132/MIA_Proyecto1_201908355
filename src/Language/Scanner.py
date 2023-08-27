@@ -3,35 +3,47 @@ import re
 errors = []
 
 reserveds = {
-    'mkdisk'  : 'RW_mkdisk',
-    'rmdisk'  : 'RW_rmdisk',
-    'fdisk'   : 'RW_fdisk',
-    'mount'   : 'RW_mount',
-    'unmount' : 'RW_unmount',
-    'mkfs'    : 'RW_mkfs',
-    'login'   : 'RW_login',
-    'logout'  : 'RW_logout',
-    'mkgrp'   : 'RW_mkgrp',
-    'rmgrp'   : 'RW_rmgrp',
-    'mkusr'   : 'RW_mkusr',
-    'rmusr'   : 'RW_rmusr',
-    'mkfile'  : 'RW_mkfile',
-    'cat'     : 'RW_cat',
-    'remove'  : 'RW_remove',
-    'edit'    : 'RW_edit',
-    'rename'  : 'RW_rename',
-    'mkdir'   : 'RW_mkdir',
-    'copy'    : 'RW_copy',
-    'move'    : 'RW_move',
-    'find'    : 'RW_find',
-    'chown'   : 'RW_chown',
-    'chgrp'   : 'RW_chgrp',
-    'chmod'   : 'RW_chmod',
-    'pause'   : 'RW_pause',
-    'recovery': 'RW_recovery',
-    'loss'    : 'RW_loss',
-    'execute' : 'RW_execute',
-    'rep'     : 'RW_rep',
+    'mkdisk'    : 'RW_mkdisk',
+    'rmdisk'    : 'RW_rmdisk',
+    'fdisk'     : 'RW_fdisk',
+    'mount'     : 'RW_mount',
+    'unmount'   : 'RW_unmount',
+    'mkfs'      : 'RW_mkfs',
+    'login'     : 'RW_login',
+    'logout'    : 'RW_logout',
+    'mkgrp'     : 'RW_mkgrp',
+    'rmgrp'     : 'RW_rmgrp',
+    'mkusr'     : 'RW_mkusr',
+    'rmusr'     : 'RW_rmusr',
+    'mkfile'    : 'RW_mkfile',
+    'cat'       : 'RW_cat',
+    'remove'    : 'RW_remove',
+    'edit'      : 'RW_edit',
+    'rename'    : 'RW_rename',
+    'mkdir'     : 'RW_mkdir',
+    'copy'      : 'RW_copy',
+    'move'      : 'RW_move',
+    'find'      : 'RW_find',
+    'chown'     : 'RW_chown',
+    'chgrp'     : 'RW_chgrp',
+    'chmod'     : 'RW_chmod',
+    'pause'     : 'RW_pause',
+    'recovery'  : 'RW_recovery',
+    'loss'      : 'RW_loss',
+    'execute'   : 'RW_execute',
+    'rep'       : 'RW_rep',
+    'mbr'       : 'RW_mbr',
+    'disk'      : 'RW_disk',
+    'inode'     : 'RW_inode',
+    'journaling': 'RW_journaling',
+    'block'     : 'RW_block',
+    'bm_inode'  : 'RW_bm_inode',
+    'bm_block'  : 'RW_bm_block',
+    'tree'      : 'RW_tree',
+    'sb'        : 'RW_sb',
+    'file'      : 'RW_file',
+    'ls'        : 'RW_ls',
+    'full'      : 'RW_full',
 }
 
 tokens = tuple(reserveds.values()) + (
@@ -54,9 +66,11 @@ tokens = tuple(reserveds.values()) + (
     'RW_destino',
     'RW_ugo',
     'RW_ruta',
-    'TK_unit',
     'TK_number',
     'TK_path',
+    'TK_unit',
+    'TK_fit',
+    'TK_type',
     'TK_id',
     'TK_equ',
     'commentary',
@@ -87,18 +101,22 @@ t_RW_fileN    = r'\-\s*(F|f)(I|i)(L|l)(E|e)(N|n)'
 t_RW_destino  = r'\-\s*(D|d)(E|e)(S|s)(T|t)(I|i)(N|n)(O|o)'
 t_RW_ugo      = r'\-\s*(U|u)(G|g)(O|o)'
 t_RW_ruta     = r'\-\s*(R|r)(U|u)(T|t)(A|a)'
-t_TK_number   = r'[0-9]+'
+t_TK_number   = r'\-?[0-9]+'
 t_TK_path     = rf'(((\.\.|\.)?\/)*{m["ID1"]})+(\.{m["EXT"]})|\"(((\.\.|\.)?\/)*{m["ID2"]})+(\.{m["EXT"]})\"'
 t_TK_equ      = r'\='
 
 def t_TK_id(t):
     r'[a-zA-Z_0-9]+'
-    if t.value.upper() in ['B', 'K', 'M']:
-        t.type = 'TK_unit'
-    elif not t.value.isdigit():
-        t.type = reserveds.get(t.value.lower(), 'TK_id')
-    else:
+    if t.value.isdigit():
         t.type = 'TK_number'
+    elif t.value.upper() in ['B', 'K', 'M']:
+        t.type = 'TK_unit'
+    elif t.value.upper() in ['BF', 'FF', 'WF']:
+        t.type = 'TK_fit'
+    elif t.value.upper() in ['P', 'E', 'L']:
+        t.type = 'TK_type'
+    else:
+        t.type = reserveds.get(t.value.lower(), 'TK_id')
     return t
 
 def t_commentary(t):
