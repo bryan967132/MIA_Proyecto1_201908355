@@ -16,7 +16,7 @@ class Execute:
         if not os.path.exists(absolutePath):
             print(' ->  Error execute: No existe el script en la ruta especificada.')
             return
-        input = open(self.path).read()
+        input = open(self.path, encoding='utf-8').read()
         parser.parse(input)
 
     def __str__(self) -> str:
