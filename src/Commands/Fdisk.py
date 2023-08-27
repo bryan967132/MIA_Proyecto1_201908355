@@ -74,10 +74,10 @@ class Fdisk:
                 if mbr.partitions[i].status and mbr.partitions[i].name.strip() == self.params['name']:
                     bytesAdds = self.params['add'] * units
                     if bytesAdds < 0:
-                        if abs(bytesAdds) > mbr.partitions[indexPartition].size:
+                        if abs(bytesAdds) > mbr.partitions[i].size:
                             print(' ->  Error fdisk: Intenta quitar más espacio del disponible en la partición.')
                             return
-                        mbr.partitions[indexPartition].size += bytesAdds
+                        mbr.partitions[i].size += bytesAdds
                         with open(self.params['path'], 'r+b') as file:
                             file.seek(0)
                             file.write(mbr.encode())
@@ -93,9 +93,6 @@ class Fdisk:
                         break
                 if nextNoEmptyByte != lastNoEmptyByte:
                     bytesAdds = self.params['add'] * units
-                    # print('\nBytesAdd =', bytesAdds,'Units =', self.params['unit'])
-                    # print('Disponible =', nextNoEmptyByte - lastNoEmptyByte)
-                    # print()
                     if bytesAdds > nextNoEmptyByte - lastNoEmptyByte:
                         print(' ->  Error fdisk: Intenta agregar más espacio del disponible después de la partición.')
                         return
