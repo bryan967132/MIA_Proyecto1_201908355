@@ -10,24 +10,24 @@ class Fdisk:
             if self.__validateParamsDelete():
                 self.__deletePartition()
             else:
-                print(' ->  Error fdisk: Faltan parámetros obligatorios para eliminar la partición.')
+                self.printError(' -> Error fdisk: Faltan parámetros obligatorios para eliminar la partición.')
             return
         if self.__isAdd():
             if self.__validateParamsAdd():
                 self.__addSpacePartition()
             else:
-                print(' ->  Error fdisk: Faltan parámetros obligatorios para agregar espacio a la partición.')
+                self.printError(' -> Error fdisk: Faltan parámetros obligatorios para agregar espacio a la partición.')
             return
         if self.__validateParams():
             self.__createPartition()
         else:
-            print(' ->  Error fdisk: Faltan parámetros obligatorios para crear la partición.')
+            self.printError(' -> Error fdisk: Faltan parámetros obligatorios para crear la partición.')
 
     def __deletePartition(self):
         self.params['path'] = self.params['path'].replace('"', '')
         absolutePath = os.path.abspath(self.params['path'])
         if not os.path.exists(absolutePath):
-            print(' ->  Error fdisk: No existe el disco para eliminar la partición.')
+            self.printError(' -> Error fdisk: No existe el disco para eliminar la partición.')
             return
         with open(self.params['path'], 'rb') as file:
             readed_bytes = file.read(127)
@@ -46,13 +46,13 @@ class Fdisk:
                         file.seek(0)
                         file.write(mbr.encode())
                     return
-            print(' ->  Error fdisk: No existe la partición que se intentó eliminar.')
+            self.printError(' -> Error fdisk: No existe la partición que se intentó eliminar.')
 
     def __addSpacePartition(self):
         self.params['path'] = self.params['path'].replace('"', '')
         absolutePath = os.path.abspath(self.params['path'])
         if not os.path.exists(absolutePath):
-            print(' ->  Error fdisk: No existe el disco para agregar espacio a la partición.')
+            self.printError(' -> Error fdisk: No existe el disco para agregar espacio a la partición.')
             return
         units = 1
         if self.params['unit'] == 'M':
@@ -62,7 +62,7 @@ class Fdisk:
         elif self.params['unit'] == 'B':
             units = 1
         else:
-            print(' ->  Error fdisk: Unidad de Bytes Incorrecta.')
+            self.printError(' -> Error fdisk: Unidad de Bytes Incorrecta.')
             return
         with open(self.params['path'], 'rb') as file:
             readed_bytes = file.read(127)
@@ -75,7 +75,7 @@ class Fdisk:
                     bytesAdds = self.params['add'] * units
                     if bytesAdds < 0:
                         if abs(bytesAdds) > mbr.partitions[i].size:
-                            print(' ->  Error fdisk: Intenta quitar más espacio del disponible en la partición.')
+                            self.printError(' ->  Error fdisk: Intenta quitar más espacio del disponible en la partición.')
                             return
                         mbr.partitions[i].size += bytesAdds
                         with open(self.params['path'], 'r+b') as file:
@@ -95,7 +95,7 @@ class Fdisk:
                 if nextNoEmptyByte != lastNoEmptyByte:
                     bytesAdds = self.params['add'] * units
                     if bytesAdds > nextNoEmptyByte - lastNoEmptyByte:
-                        print(' ->  Error fdisk: Intenta agregar más espacio del disponible después de la partición.')
+                        self.printError(' -> Error fdisk: Intenta agregar más espacio del disponible después de la partición.')
                         return
                     mbr.partitions[indexPartition].size += bytesAdds
                     with open(self.params['path'], 'r+b') as file:
@@ -106,14 +106,14 @@ class Fdisk:
                     bytesAdds = self.params['add'] * units
                     lastSpace = mbr.size - lastNoEmptyByte
                     if bytesAdds > lastSpace:
-                        print(' ->  Error fdisk: Intenta agregar más espacio del disponible después de la partición.')
+                        self.printError(' -> Error fdisk: Intenta agregar más espacio del disponible después de la partición.')
                         return
                     mbr.partitions[indexPartition].size += bytesAdds
                     with open(self.params['path'], 'r+b') as file:
                         file.seek(0)
                         file.write(mbr.encode())
                     return
-            print(' ->  Error fdisk: No existe la partición a la que se intentó agregar o quitar espacio.')
+            self.printError(' -> Error fdisk: No existe la partición a la que se intentó agregar o quitar espacio.')
 
     def __createPartition(self):
         self.params['path'] = self.params['path'].replace('"', '')
@@ -121,11 +121,11 @@ class Fdisk:
         self.params['type'] = self.params['type'].upper()
         absolutePath = os.path.abspath(self.params['path'])
         if not os.path.exists(absolutePath):
-            print(' ->  Error fdisk: No existe el disco para particionar.')
+            self.printError(' -> Error fdisk: No existe el disco para particionar.')
             return
         self.params['unit'] = self.params['unit'].upper()
         if self.params['size'] < 0:
-            print(' ->  Error: El tamaño de la partición debe ser mayor que cero')
+            self.printError(' -> Error: El tamaño de la partición debe ser mayor que cero')
             return
         units = 1
         if self.params['unit'] == 'M':
@@ -135,30 +135,53 @@ class Fdisk:
         elif self.params['unit'] == 'B':
             units = 1
         else:
-            print(' ->  Error fdisk: Unidad de Bytes Incorrecta.')
+            self.printError(' -> Error fdisk: Unidad de Bytes Incorrecta.')
             return
         with open(self.params['path'], 'rb') as file:
             readed_bytes = file.read(127)
             mbr = MBR.decode(readed_bytes)
             self.params['fit'] = self.params['fit'][:1]
             disponible = []
+            lastNoEmptyByte = 126
             for i in range(len(mbr.partitions)):
-                if not mbr.partitions[i].status:
-                    start = 128
-                    if i > 0:
-                        start = mbr.partitions[i - 1].start + mbr.partitions[i - 1].size
-                    mbr.partitions[i] = Partition(
-                        '0',
-                        self.params['type'],
-                        self.params['fit'],
-                        start,
-                        self.params['size'] * units,
-                        self.params['name'][:16].ljust(16)
-                    )
-                    with open(self.params['path'], 'r+b') as file:
-                        file.seek(0)
-                        file.write(mbr.encode())
-                    return
+                if mbr.partitions[i].status:
+                    if mbr.partitions[i].start - lastNoEmptyByte > 1 and mbr.partitions[i].start - lastNoEmptyByte >= self.params['size'] * units:
+                        disponible.append([lastNoEmptyByte + 1, mbr.partitions[i].start - lastNoEmptyByte])
+                    lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
+            if mbr.size - lastNoEmptyByte  > 1 and mbr.size - lastNoEmptyByte >= self.params['size'] * units:
+                disponible.append([lastNoEmptyByte + 1, mbr.size - lastNoEmptyByte - 1])
+            if len(disponible) > 0:
+                for i in range(len(mbr.partitions)):
+                    if not mbr.partitions[i].status:
+                        mbr.partitions[i] = Partition(
+                            '0',
+                            self.params['type'],
+                            self.params['fit'],
+                            disponible[0][0],
+                            self.params['size'] * units,
+                            self.params['name'][:16].ljust(16)
+                        )
+                        mbr.partitions = self.__sortOrder(mbr.partitions)
+                        with open(self.params['path'], 'r+b') as file:
+                            file.seek(0)
+                            file.write(mbr.encode())
+                        return
+            else:
+                self.printError(' -> Error fdisk: No hay espacio suficiente para la nueva partición.')
+
+    def __sortOrder(self, partitions):
+        temporalPartitions = [partition for partition in partitions if partition.status]
+        if len(temporalPartitions) > 1:
+            for i in range(1, len(temporalPartitions)):
+                for j in range(i, 0, -1):
+                    if temporalPartitions[i].start < temporalPartitions[i - 1].start:
+                        temporalPartitions[i], temporalPartitions[i - 1] = temporalPartitions[i - 1], temporalPartitions[i]
+                        continue
+                    break
+            partitions = temporalPartitions
+            for i in range(len(temporalPartitions), 4):
+                partitions.append(Partition())
+        return partitions
 
     def __isDelete(self):
         for k in self.params:
@@ -203,5 +226,9 @@ class Fdisk:
                 name = True
         return size and path and name
 
+    def printError(self, text):
+        print(f"\033[{31}m{text}\033[0m")
+
     def __str__(self) -> str:
         return 'Fdisk'
+    
