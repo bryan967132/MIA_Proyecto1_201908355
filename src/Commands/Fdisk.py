@@ -67,7 +67,7 @@ class Fdisk:
         with open(self.params['path'], 'rb') as file:
             readed_bytes = file.read(127)
             mbr = MBR.decode(readed_bytes)
-            lastNoEmptyByte = 127
+            lastNoEmptyByte = 126
             indexPartition = 0
             existPartition = False
             for i in range(len(mbr.partitions)):
