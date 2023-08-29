@@ -1,3 +1,4 @@
+from Env.Env import *
 import os
 
 class Rmdisk:
@@ -6,11 +7,11 @@ class Rmdisk:
 
     def exec(self):
         if not self.path:
-            print(' ->  Error rmdisk: No se especificó el disoc que quiere eliminar.')
+            self.printError(' ->  Error rmdisk: No se especificó el disoc que quiere eliminar.')
             return
         absolutePath = os.path.abspath(self.path)
         if not os.path.exists(absolutePath):
-            print(' ->  Error rmdisk: No existe el disco que quiere eliminar.')
+            self.printError(' ->  Error rmdisk: No existe el disco que quiere eliminar.')
             return
         while True:
             confirm = input('Eliminar el disco (y/n): ')
@@ -18,4 +19,9 @@ class Rmdisk:
                 break
             elif confirm.lower() == 'n':
                 return
+        del disks[os.path.basename(self.path).split('.')[0]]
         os.remove(self.path)
+
+
+    def printError(self, text):
+        print(f"\033[{31}m{text}\033[0m")
