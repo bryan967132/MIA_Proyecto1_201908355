@@ -1,7 +1,7 @@
-**/Disks
-**/Reps
 **/*.txt
 **/__pycache__
 **/__init__.py
+**/*dsk
+**/*jpg
 **/*pdf
 **/*sh
