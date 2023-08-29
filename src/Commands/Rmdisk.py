@@ -7,11 +7,11 @@ class Rmdisk:
 
     def exec(self):
         if not self.path:
-            self.printError(' ->  Error rmdisk: No se especificó el disoc que quiere eliminar.')
+            self.printError(' -> Error rmdisk: No se especificó el disoc que quiere eliminar.')
             return
         absolutePath = os.path.abspath(self.path)
         if not os.path.exists(absolutePath):
-            self.printError(' ->  Error rmdisk: No existe el disco que quiere eliminar.')
+            self.printError(' -> Error rmdisk: No existe el disco que quiere eliminar.')
             return
         while True:
             confirm = input('Eliminar el disco (y/n): ')
