@@ -11,7 +11,7 @@ class Mkdisk:
             self.params['unit'] = self.params['unit'].upper()
             self.params['fit'] = self.params['fit'].upper()
             if self.params['size'] < 0:
-                self.printError(' ->  Error: El tamaño de la partición debe ser mayor que cero')
+                self.printError(' -> Error: El tamaño de la partición debe ser mayor que cero')
                 return
             k = 1
             if self.params['unit'] == 'M':
@@ -19,7 +19,7 @@ class Mkdisk:
             elif self.params['unit'] == 'K':
                 k = 1024
             else:
-                self.printError(' ->  Error mkdisk: Unidad de Bytes Incorrecta')
+                self.printError(' -> Error mkdisk: Unidad de Bytes Incorrecta')
                 return
             self.params['path'] = self.params['path'].replace('"', '')
             absolutePath = os.path.abspath(self.params['path'])
@@ -37,7 +37,7 @@ class Mkdisk:
                 file.seek(0)
                 file.write(mbr.encode())
         else:
-            self.printError(' ->  Error mkdisk: Faltan Parámetros Obligatorios.')
+            self.printError(' -> Error mkdisk: Faltan Parámetros Obligatorios.')
 
     def __validateParams(self):
         size = False
