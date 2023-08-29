@@ -1,4 +1,5 @@
 from Structures.MBR import *
+from Env.Env import *
 import os
 
 class Mkdisk:
@@ -10,7 +11,7 @@ class Mkdisk:
             self.params['unit'] = self.params['unit'].upper()
             self.params['fit'] = self.params['fit'].upper()
             if self.params['size'] < 0:
-                print(' ->  Error: El tamaño de la partición debe ser mayor que cero')
+                self.printError(' ->  Error: El tamaño de la partición debe ser mayor que cero')
                 return
             k = 1
             if self.params['unit'] == 'M':
@@ -18,7 +19,7 @@ class Mkdisk:
             elif self.params['unit'] == 'K':
                 k = 1024
             else:
-                print('Unidad de Bytes Incorrecta')
+                self.printError(' ->  Error mkdisk: Unidad de Bytes Incorrecta')
                 return
             self.params['path'] = self.params['path'].replace('"', '')
             absolutePath = os.path.abspath(self.params['path'])
@@ -27,6 +28,7 @@ class Mkdisk:
                 os.makedirs(directory)
             self.params['fit'] = self.params['fit'][:1]
             mbr = MBR(size = self.params['size'] * k, fit = self.params['fit'])
+            disks[os.path.basename(self.params['path']).split('.')[0]] = os.path.abspath(self.params['path'])
             with open(self.params['path'], 'wb') as file:
                 byte = b'\x00'
                 for i in range(self.params['size']):
@@ -35,7 +37,7 @@ class Mkdisk:
                 file.seek(0)
                 file.write(mbr.encode())
         else:
-            print(' ->  Error mkdisk: Faltan Parámetros Obligatorios.')
+            self.printError(' ->  Error mkdisk: Faltan Parámetros Obligatorios.')
 
     def __validateParams(self):
         size = False
@@ -47,6 +49,9 @@ class Mkdisk:
             elif k == 'path':
                 path = True
         return size and path
+
+    def printError(self, text):
+        print(f"\033[{31}m{text}\033[0m")
 
     def __str__(self) -> str:
         return 'Mkdisk'
