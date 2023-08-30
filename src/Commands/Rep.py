@@ -72,7 +72,7 @@ class Rep:
 
                 dot = 'digraph Disk{\n\tnode [shape=plaintext];'
                 dot += '\n\ttabla[label=<\n\t\t<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="2" CELLPADDING="4">'
-                dot += f'\n\t\t\t<TR>\n\t\t\t\t<TD COLSPAN="{ocuppedCells}">Disk1</TD>\n\t\t\t</TR>'
+                dot += f'\n\t\t\t<TR>\n\t\t\t\t<TD COLSPAN="{ocuppedCells}">{self.params["id"][3:]}</TD>\n\t\t\t</TR>'
                 dot += '\n\t\t\t<TR>\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="6">MBR</TD>'
                 dot += dotParts
                 dot += '\n\t\t\t</TR>'
