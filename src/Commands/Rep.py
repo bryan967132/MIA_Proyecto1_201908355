@@ -91,7 +91,7 @@ class Rep:
             os.makedirs(destdir)
         with open(absolutePathDot, 'w') as file:
             file.write(dot)
-        os.system(f'dot -T{extension} {absolutePathDot} -o {absolutePath}')
+        os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
         os.remove(absolutePath.replace(extension, "dot"))
 
     def porcentaje(self, number : float) -> int or float:
