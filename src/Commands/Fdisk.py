@@ -146,11 +146,19 @@ class Fdisk:
             for i in range(len(mbr.partitions)):
                 if mbr.partitions[i].status:
                     if mbr.partitions[i].start - lastNoEmptyByte > 1 and mbr.partitions[i].start - lastNoEmptyByte >= self.params['size'] * units:
+                        print([lastNoEmptyByte + 1, mbr.partitions[i].start - lastNoEmptyByte])
                         disponible.append([lastNoEmptyByte + 1, mbr.partitions[i].start - lastNoEmptyByte])
                     lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
             if mbr.size - lastNoEmptyByte  > 1 and mbr.size - lastNoEmptyByte >= self.params['size'] * units:
+                print("FINAL", [lastNoEmptyByte + 1, mbr.size - lastNoEmptyByte - 1])
                 disponible.append([lastNoEmptyByte + 1, mbr.size - lastNoEmptyByte - 1])
             if len(disponible) > 0:
+                print(mbr.fit)
+                if mbr.fit == 'B':
+                    disponible = self.__sortBestFit(disponible)
+                elif mbr.fit == 'W':
+                    disponible = self.__sortWorstFit(disponible)
+                print(disponible)
                 for i in range(len(mbr.partitions)):
                     if not mbr.partitions[i].status:
                         mbr.partitions[i] = Partition(
@@ -166,21 +174,40 @@ class Fdisk:
                             file.seek(0)
                             file.write(mbr.encode())
                         return
+                self.printError(' -> Error fdisk: No pueden crearse mas particiones.')
             else:
                 self.printError(' -> Error fdisk: No hay espacio suficiente para la nueva partición.')
 
-    def __sortOrder(self, partitions):
-        temporalPartitions = [partition for partition in partitions if partition.status]
-        if len(temporalPartitions) > 1:
-            for i in range(1, len(temporalPartitions)):
+    def __sortBestFit(self, disponible):
+        if len(disponible) > 1:
+            for i in range(1, len(disponible)):
                 for j in range(i, 0, -1):
-                    if temporalPartitions[i].start < temporalPartitions[i - 1].start:
-                        temporalPartitions[i], temporalPartitions[i - 1] = temporalPartitions[i - 1], temporalPartitions[i]
+                    if disponible[j][1] < disponible[j - 1][1]:
+                        disponible[j], disponible[j - 1] = disponible[j - 1], disponible[j]
                         continue
                     break
-            partitions = temporalPartitions
-            for i in range(len(temporalPartitions), 4):
-                partitions.append(Partition())
+        return disponible
+
+    def __sortWorstFit(self, disponible):
+        if len(disponible) > 1:
+            for i in range(1, len(disponible)):
+                for j in range(i, 0, -1):
+                    if disponible[j][1] > disponible[j - 1][1]:
+                        disponible[j], disponible[j - 1] = disponible[j - 1], disponible[j]
+                        continue
+                    break
+        return disponible
+
+    def __sortOrder(self, partitions):
+        for i in range(1, len(partitions)):
+            if partitions[i].start:
+                for j in range(i, 0, -1):
+                    if partitions[j].start < partitions[j - 1].start:
+                        partitions[j], partitions[j - 1] = partitions[j - 1], partitions[j]
+                        continue
+                    break
+                continue
+            break
         return partitions
 
     def __isDelete(self):
