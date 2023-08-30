@@ -2,9 +2,6 @@ Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
-    RW_block
-    RW_bm_block
-    RW_bm_inode
     RW_cat
     RW_chgrp
     RW_chmod
@@ -12,21 +9,14 @@ Unused terminals:
     RW_cont
     RW_copy
     RW_destino
-    RW_disk
     RW_edit
-    RW_file
     RW_fileN
     RW_find
     RW_fs
     RW_grp
-    RW_id
-    RW_inode
-    RW_journaling
     RW_login
     RW_logout
     RW_loss
-    RW_ls
-    RW_mbr
     RW_mkdir
     RW_mkfile
     RW_mkfs
@@ -42,9 +32,6 @@ Unused terminals:
     RW_rename
     RW_rmgrp
     RW_rmusr
-    RW_ruta
-    RW_sb
-    RW_tree
     RW_ugo
     RW_unmount
     RW_user
@@ -85,15 +72,33 @@ Rule 30    FDISKPARAM -> RW_type TK_equ TK_type
 Rule 31    FDISKPARAM -> RW_fit TK_equ TK_fit
 Rule 32    FDISKPARAM -> RW_delete TK_equ RW_full
 Rule 33    FDISKPARAM -> RW_add TK_equ TK_number
-Rule 34    REP -> RW_rep
-Rule 35    COMMENTARY -> commentary
+Rule 34    REP -> RW_rep REPPARAMS
+Rule 35    REP -> RW_rep
+Rule 36    REPPARAMS -> REPPARAMS REPPARAM
+Rule 37    REPPARAMS -> REPPARAM
+Rule 38    REPPARAM -> RW_name TK_equ NAME
+Rule 39    REPPARAM -> RW_path TK_equ TK_path
+Rule 40    REPPARAM -> RW_id TK_equ TK_id
+Rule 41    REPPARAM -> RW_ruta TK_equ TK_path
+Rule 42    NAME -> RW_mbr
+Rule 43    NAME -> RW_disk
+Rule 44    NAME -> RW_inode
+Rule 45    NAME -> RW_journaling
+Rule 46    NAME -> RW_block
+Rule 47    NAME -> RW_bm_inode
+Rule 48    NAME -> RW_bm_block
+Rule 49    NAME -> RW_tree
+Rule 50    NAME -> RW_sb
+Rule 51    NAME -> RW_file
+Rule 52    NAME -> RW_ls
+Rule 53    COMMENTARY -> commentary
 
 Terminals, with rules where they appear
 
 RW_add               : 33
-RW_block             : 
-RW_bm_block          : 
-RW_bm_inode          : 
+RW_block             : 46
+RW_bm_block          : 48
+RW_bm_inode          : 47
 RW_cat               : 
 RW_chgrp             : 
 RW_chmod             : 
@@ -102,25 +107,25 @@ RW_cont              :
 RW_copy              : 
 RW_delete            : 32
 RW_destino           : 
-RW_disk              : 
+RW_disk              : 43
 RW_edit              : 
 RW_execute           : 10 11
 RW_fdisk             : 22 23
-RW_file              : 
+RW_file              : 51
 RW_fileN             : 
 RW_find              : 
 RW_fit               : 18 31
 RW_fs                : 
 RW_full              : 32
 RW_grp               : 
-RW_id                : 
-RW_inode             : 
-RW_journaling        : 
+RW_id                : 40
+RW_inode             : 44
+RW_journaling        : 45
 RW_login             : 
 RW_logout            : 
 RW_loss              : 
-RW_ls                : 
-RW_mbr               : 
+RW_ls                : 52
+RW_mbr               : 42
 RW_mkdir             : 
 RW_mkdisk            : 12 13
 RW_mkfile            : 
@@ -129,35 +134,35 @@ RW_mkgrp             :
 RW_mkusr             : 
 RW_mount             : 
 RW_move              : 
-RW_name              : 28
+RW_name              : 28 38
 RW_pass              : 
-RW_path              : 10 17 20 27
+RW_path              : 10 17 20 27 39
 RW_pause             : 
 RW_r                 : 
 RW_recovery          : 
 RW_remove            : 
 RW_rename            : 
-RW_rep               : 34
+RW_rep               : 34 35
 RW_rmdisk            : 20 21
 RW_rmgrp             : 
 RW_rmusr             : 
-RW_ruta              : 
-RW_sb                : 
+RW_ruta              : 41
+RW_sb                : 50
 RW_size              : 16 26
-RW_tree              : 
+RW_tree              : 49
 RW_type              : 30
 RW_ugo               : 
 RW_unit              : 19 29
 RW_unmount           : 
 RW_user              : 
-TK_equ               : 10 16 17 18 19 20 26 27 28 29 30 31 32 33
+TK_equ               : 10 16 17 18 19 20 26 27 28 29 30 31 32 33 38 39 40 41
 TK_fit               : 18 31
-TK_id                : 28
+TK_id                : 28 40
 TK_number            : 16 26 33
-TK_path              : 10 17 20 27
+TK_path              : 10 17 20 27 39 41
 TK_type              : 30
 TK_unit              : 19 29
-commentary           : 35
+commentary           : 53
 error                : 
 
 Nonterminals, with rules where they appear
@@ -173,7 +178,10 @@ INIT                 : 0
 MKDISK               : 5
 MKDISKPARAM          : 14 15
 MKDISKPARAMS         : 12 14
+NAME                 : 38
 REP                  : 8
+REPPARAM             : 36 37
+REPPARAMS            : 34 36
 RMDISK               : 6
 
 Parsing method: LALR
@@ -198,8 +206,9 @@ state 0
     (21) RMDISK -> . RW_rmdisk
     (22) FDISK -> . RW_fdisk FDISKPARAMS
     (23) FDISK -> . RW_fdisk
-    (34) REP -> . RW_rep
-    (35) COMMENTARY -> . commentary
+    (34) REP -> . RW_rep REPPARAMS
+    (35) REP -> . RW_rep
+    (53) COMMENTARY -> . commentary
 
     RW_execute      shift and go to state 10
     RW_mkdisk       shift and go to state 11
@@ -242,8 +251,9 @@ state 2
     (21) RMDISK -> . RW_rmdisk
     (22) FDISK -> . RW_fdisk FDISKPARAMS
     (23) FDISK -> . RW_fdisk
-    (34) REP -> . RW_rep
-    (35) COMMENTARY -> . commentary
+    (34) REP -> . RW_rep REPPARAMS
+    (35) REP -> . RW_rep
+    (53) COMMENTARY -> . commentary
 
     $end            reduce using rule 1 (INIT -> COMMANDS .)
     RW_execute      shift and go to state 10
@@ -444,28 +454,41 @@ state 13
 
 state 14
 
-    (34) REP -> RW_rep .
+    (34) REP -> RW_rep . REPPARAMS
+    (35) REP -> RW_rep .
+    (36) REPPARAMS -> . REPPARAMS REPPARAM
+    (37) REPPARAMS -> . REPPARAM
+    (38) REPPARAM -> . RW_name TK_equ NAME
+    (39) REPPARAM -> . RW_path TK_equ TK_path
+    (40) REPPARAM -> . RW_id TK_equ TK_id
+    (41) REPPARAM -> . RW_ruta TK_equ TK_path
 
-    RW_execute      reduce using rule 34 (REP -> RW_rep .)
-    RW_mkdisk       reduce using rule 34 (REP -> RW_rep .)
-    RW_rmdisk       reduce using rule 34 (REP -> RW_rep .)
-    RW_fdisk        reduce using rule 34 (REP -> RW_rep .)
-    RW_rep          reduce using rule 34 (REP -> RW_rep .)
-    commentary      reduce using rule 34 (REP -> RW_rep .)
-    $end            reduce using rule 34 (REP -> RW_rep .)
+    RW_execute      reduce using rule 35 (REP -> RW_rep .)
+    RW_mkdisk       reduce using rule 35 (REP -> RW_rep .)
+    RW_rmdisk       reduce using rule 35 (REP -> RW_rep .)
+    RW_fdisk        reduce using rule 35 (REP -> RW_rep .)
+    RW_rep          reduce using rule 35 (REP -> RW_rep .)
+    commentary      reduce using rule 35 (REP -> RW_rep .)
+    $end            reduce using rule 35 (REP -> RW_rep .)
+    RW_name         shift and go to state 37
+    RW_path         shift and go to state 38
+    RW_id           shift and go to state 39
+    RW_ruta         shift and go to state 40
 
+    REPPARAMS                      shift and go to state 35
+    REPPARAM                       shift and go to state 36
 
 state 15
 
-    (35) COMMENTARY -> commentary .
+    (53) COMMENTARY -> commentary .
 
-    RW_execute      reduce using rule 35 (COMMENTARY -> commentary .)
-    RW_mkdisk       reduce using rule 35 (COMMENTARY -> commentary .)
-    RW_rmdisk       reduce using rule 35 (COMMENTARY -> commentary .)
-    RW_fdisk        reduce using rule 35 (COMMENTARY -> commentary .)
-    RW_rep          reduce using rule 35 (COMMENTARY -> commentary .)
-    commentary      reduce using rule 35 (COMMENTARY -> commentary .)
-    $end            reduce using rule 35 (COMMENTARY -> commentary .)
+    RW_execute      reduce using rule 53 (COMMENTARY -> commentary .)
+    RW_mkdisk       reduce using rule 53 (COMMENTARY -> commentary .)
+    RW_rmdisk       reduce using rule 53 (COMMENTARY -> commentary .)
+    RW_fdisk        reduce using rule 53 (COMMENTARY -> commentary .)
+    RW_rep          reduce using rule 53 (COMMENTARY -> commentary .)
+    commentary      reduce using rule 53 (COMMENTARY -> commentary .)
+    $end            reduce using rule 53 (COMMENTARY -> commentary .)
 
 
 state 16
@@ -485,7 +508,7 @@ state 17
 
     (10) EXECUTE -> RW_execute RW_path . TK_equ TK_path
 
-    TK_equ          shift and go to state 35
+    TK_equ          shift and go to state 41
 
 
 state 18
@@ -509,7 +532,7 @@ state 18
     RW_fit          shift and go to state 22
     RW_unit         shift and go to state 23
 
-    MKDISKPARAM                    shift and go to state 36
+    MKDISKPARAM                    shift and go to state 42
 
 state 19
 
@@ -532,35 +555,35 @@ state 20
 
     (16) MKDISKPARAM -> RW_size . TK_equ TK_number
 
-    TK_equ          shift and go to state 37
+    TK_equ          shift and go to state 43
 
 
 state 21
 
     (17) MKDISKPARAM -> RW_path . TK_equ TK_path
 
-    TK_equ          shift and go to state 38
+    TK_equ          shift and go to state 44
 
 
 state 22
 
     (18) MKDISKPARAM -> RW_fit . TK_equ TK_fit
 
-    TK_equ          shift and go to state 39
+    TK_equ          shift and go to state 45
 
 
 state 23
 
     (19) MKDISKPARAM -> RW_unit . TK_equ TK_unit
 
-    TK_equ          shift and go to state 40
+    TK_equ          shift and go to state 46
 
 
 state 24
 
     (20) RMDISK -> RW_rmdisk RW_path . TK_equ TK_path
 
-    TK_equ          shift and go to state 41
+    TK_equ          shift and go to state 47
 
 
 state 25
@@ -592,7 +615,7 @@ state 25
     RW_delete       shift and go to state 33
     RW_add          shift and go to state 34
 
-    FDISKPARAM                     shift and go to state 42
+    FDISKPARAM                     shift and go to state 48
 
 state 26
 
@@ -619,66 +642,134 @@ state 27
 
     (26) FDISKPARAM -> RW_size . TK_equ TK_number
 
-    TK_equ          shift and go to state 43
+    TK_equ          shift and go to state 49
 
 
 state 28
 
     (27) FDISKPARAM -> RW_path . TK_equ TK_path
 
-    TK_equ          shift and go to state 44
+    TK_equ          shift and go to state 50
 
 
 state 29
 
     (28) FDISKPARAM -> RW_name . TK_equ TK_id
 
-    TK_equ          shift and go to state 45
+    TK_equ          shift and go to state 51
 
 
 state 30
 
     (29) FDISKPARAM -> RW_unit . TK_equ TK_unit
 
-    TK_equ          shift and go to state 46
+    TK_equ          shift and go to state 52
 
 
 state 31
 
     (30) FDISKPARAM -> RW_type . TK_equ TK_type
 
-    TK_equ          shift and go to state 47
+    TK_equ          shift and go to state 53
 
 
 state 32
 
     (31) FDISKPARAM -> RW_fit . TK_equ TK_fit
 
-    TK_equ          shift and go to state 48
+    TK_equ          shift and go to state 54
 
 
 state 33
 
     (32) FDISKPARAM -> RW_delete . TK_equ RW_full
 
-    TK_equ          shift and go to state 49
+    TK_equ          shift and go to state 55
 
 
 state 34
 
     (33) FDISKPARAM -> RW_add . TK_equ TK_number
 
-    TK_equ          shift and go to state 50
+    TK_equ          shift and go to state 56
 
 
 state 35
 
-    (10) EXECUTE -> RW_execute RW_path TK_equ . TK_path
+    (34) REP -> RW_rep REPPARAMS .
+    (36) REPPARAMS -> REPPARAMS . REPPARAM
+    (38) REPPARAM -> . RW_name TK_equ NAME
+    (39) REPPARAM -> . RW_path TK_equ TK_path
+    (40) REPPARAM -> . RW_id TK_equ TK_id
+    (41) REPPARAM -> . RW_ruta TK_equ TK_path
 
-    TK_path         shift and go to state 51
+    RW_execute      reduce using rule 34 (REP -> RW_rep REPPARAMS .)
+    RW_mkdisk       reduce using rule 34 (REP -> RW_rep REPPARAMS .)
+    RW_rmdisk       reduce using rule 34 (REP -> RW_rep REPPARAMS .)
+    RW_fdisk        reduce using rule 34 (REP -> RW_rep REPPARAMS .)
+    RW_rep          reduce using rule 34 (REP -> RW_rep REPPARAMS .)
+    commentary      reduce using rule 34 (REP -> RW_rep REPPARAMS .)
+    $end            reduce using rule 34 (REP -> RW_rep REPPARAMS .)
+    RW_name         shift and go to state 37
+    RW_path         shift and go to state 38
+    RW_id           shift and go to state 39
+    RW_ruta         shift and go to state 40
 
+    REPPARAM                       shift and go to state 57
 
 state 36
+
+    (37) REPPARAMS -> REPPARAM .
+
+    RW_name         reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    RW_path         reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    RW_id           reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    RW_ruta         reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    RW_execute      reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    RW_mkdisk       reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    RW_rmdisk       reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    RW_fdisk        reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    RW_rep          reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    commentary      reduce using rule 37 (REPPARAMS -> REPPARAM .)
+    $end            reduce using rule 37 (REPPARAMS -> REPPARAM .)
+
+
+state 37
+
+    (38) REPPARAM -> RW_name . TK_equ NAME
+
+    TK_equ          shift and go to state 58
+
+
+state 38
+
+    (39) REPPARAM -> RW_path . TK_equ TK_path
+
+    TK_equ          shift and go to state 59
+
+
+state 39
+
+    (40) REPPARAM -> RW_id . TK_equ TK_id
+
+    TK_equ          shift and go to state 60
+
+
+state 40
+
+    (41) REPPARAM -> RW_ruta . TK_equ TK_path
+
+    TK_equ          shift and go to state 61
+
+
+state 41
+
+    (10) EXECUTE -> RW_execute RW_path TK_equ . TK_path
+
+    TK_path         shift and go to state 62
+
+
+state 42
 
     (14) MKDISKPARAMS -> MKDISKPARAMS MKDISKPARAM .
 
@@ -695,42 +786,42 @@ state 36
     $end            reduce using rule 14 (MKDISKPARAMS -> MKDISKPARAMS MKDISKPARAM .)
 
 
-state 37
+state 43
 
     (16) MKDISKPARAM -> RW_size TK_equ . TK_number
 
-    TK_number       shift and go to state 52
+    TK_number       shift and go to state 63
 
 
-state 38
+state 44
 
     (17) MKDISKPARAM -> RW_path TK_equ . TK_path
 
-    TK_path         shift and go to state 53
+    TK_path         shift and go to state 64
 
 
-state 39
+state 45
 
     (18) MKDISKPARAM -> RW_fit TK_equ . TK_fit
 
-    TK_fit          shift and go to state 54
+    TK_fit          shift and go to state 65
 
 
-state 40
+state 46
 
     (19) MKDISKPARAM -> RW_unit TK_equ . TK_unit
 
-    TK_unit         shift and go to state 55
+    TK_unit         shift and go to state 66
 
 
-state 41
+state 47
 
     (20) RMDISK -> RW_rmdisk RW_path TK_equ . TK_path
 
-    TK_path         shift and go to state 56
+    TK_path         shift and go to state 67
 
 
-state 42
+state 48
 
     (24) FDISKPARAMS -> FDISKPARAMS FDISKPARAM .
 
@@ -751,63 +842,130 @@ state 42
     $end            reduce using rule 24 (FDISKPARAMS -> FDISKPARAMS FDISKPARAM .)
 
 
-state 43
+state 49
 
     (26) FDISKPARAM -> RW_size TK_equ . TK_number
 
-    TK_number       shift and go to state 57
-
-
-state 44
-
-    (27) FDISKPARAM -> RW_path TK_equ . TK_path
-
-    TK_path         shift and go to state 58
-
-
-state 45
-
-    (28) FDISKPARAM -> RW_name TK_equ . TK_id
-
-    TK_id           shift and go to state 59
-
-
-state 46
-
-    (29) FDISKPARAM -> RW_unit TK_equ . TK_unit
-
-    TK_unit         shift and go to state 60
-
-
-state 47
-
-    (30) FDISKPARAM -> RW_type TK_equ . TK_type
-
-    TK_type         shift and go to state 61
-
-
-state 48
-
-    (31) FDISKPARAM -> RW_fit TK_equ . TK_fit
-
-    TK_fit          shift and go to state 62
-
-
-state 49
-
-    (32) FDISKPARAM -> RW_delete TK_equ . RW_full
-
-    RW_full         shift and go to state 63
+    TK_number       shift and go to state 68
 
 
 state 50
 
-    (33) FDISKPARAM -> RW_add TK_equ . TK_number
+    (27) FDISKPARAM -> RW_path TK_equ . TK_path
 
-    TK_number       shift and go to state 64
+    TK_path         shift and go to state 69
 
 
 state 51
+
+    (28) FDISKPARAM -> RW_name TK_equ . TK_id
+
+    TK_id           shift and go to state 70
+
+
+state 52
+
+    (29) FDISKPARAM -> RW_unit TK_equ . TK_unit
+
+    TK_unit         shift and go to state 71
+
+
+state 53
+
+    (30) FDISKPARAM -> RW_type TK_equ . TK_type
+
+    TK_type         shift and go to state 72
+
+
+state 54
+
+    (31) FDISKPARAM -> RW_fit TK_equ . TK_fit
+
+    TK_fit          shift and go to state 73
+
+
+state 55
+
+    (32) FDISKPARAM -> RW_delete TK_equ . RW_full
+
+    RW_full         shift and go to state 74
+
+
+state 56
+
+    (33) FDISKPARAM -> RW_add TK_equ . TK_number
+
+    TK_number       shift and go to state 75
+
+
+state 57
+
+    (36) REPPARAMS -> REPPARAMS REPPARAM .
+
+    RW_name         reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    RW_path         reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    RW_id           reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    RW_ruta         reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    RW_execute      reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    RW_mkdisk       reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    RW_rmdisk       reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    RW_fdisk        reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    RW_rep          reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    commentary      reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+    $end            reduce using rule 36 (REPPARAMS -> REPPARAMS REPPARAM .)
+
+
+state 58
+
+    (38) REPPARAM -> RW_name TK_equ . NAME
+    (42) NAME -> . RW_mbr
+    (43) NAME -> . RW_disk
+    (44) NAME -> . RW_inode
+    (45) NAME -> . RW_journaling
+    (46) NAME -> . RW_block
+    (47) NAME -> . RW_bm_inode
+    (48) NAME -> . RW_bm_block
+    (49) NAME -> . RW_tree
+    (50) NAME -> . RW_sb
+    (51) NAME -> . RW_file
+    (52) NAME -> . RW_ls
+
+    RW_mbr          shift and go to state 77
+    RW_disk         shift and go to state 78
+    RW_inode        shift and go to state 79
+    RW_journaling   shift and go to state 80
+    RW_block        shift and go to state 81
+    RW_bm_inode     shift and go to state 82
+    RW_bm_block     shift and go to state 83
+    RW_tree         shift and go to state 84
+    RW_sb           shift and go to state 85
+    RW_file         shift and go to state 86
+    RW_ls           shift and go to state 87
+
+    NAME                           shift and go to state 76
+
+state 59
+
+    (39) REPPARAM -> RW_path TK_equ . TK_path
+
+    TK_path         shift and go to state 88
+
+
+state 60
+
+    (40) REPPARAM -> RW_id TK_equ . TK_id
+
+    TK_id           shift and go to state 89
+
+
+state 61
+
+    (41) REPPARAM -> RW_ruta TK_equ . TK_path
+
+    TK_path         shift and go to state 90
+
+
+state 62
 
     (10) EXECUTE -> RW_execute RW_path TK_equ TK_path .
 
@@ -820,7 +978,7 @@ state 51
     $end            reduce using rule 10 (EXECUTE -> RW_execute RW_path TK_equ TK_path .)
 
 
-state 52
+state 63
 
     (16) MKDISKPARAM -> RW_size TK_equ TK_number .
 
@@ -837,7 +995,7 @@ state 52
     $end            reduce using rule 16 (MKDISKPARAM -> RW_size TK_equ TK_number .)
 
 
-state 53
+state 64
 
     (17) MKDISKPARAM -> RW_path TK_equ TK_path .
 
@@ -854,7 +1012,7 @@ state 53
     $end            reduce using rule 17 (MKDISKPARAM -> RW_path TK_equ TK_path .)
 
 
-state 54
+state 65
 
     (18) MKDISKPARAM -> RW_fit TK_equ TK_fit .
 
@@ -871,7 +1029,7 @@ state 54
     $end            reduce using rule 18 (MKDISKPARAM -> RW_fit TK_equ TK_fit .)
 
 
-state 55
+state 66
 
     (19) MKDISKPARAM -> RW_unit TK_equ TK_unit .
 
@@ -888,7 +1046,7 @@ state 55
     $end            reduce using rule 19 (MKDISKPARAM -> RW_unit TK_equ TK_unit .)
 
 
-state 56
+state 67
 
     (20) RMDISK -> RW_rmdisk RW_path TK_equ TK_path .
 
@@ -901,7 +1059,7 @@ state 56
     $end            reduce using rule 20 (RMDISK -> RW_rmdisk RW_path TK_equ TK_path .)
 
 
-state 57
+state 68
 
     (26) FDISKPARAM -> RW_size TK_equ TK_number .
 
@@ -922,7 +1080,7 @@ state 57
     $end            reduce using rule 26 (FDISKPARAM -> RW_size TK_equ TK_number .)
 
 
-state 58
+state 69
 
     (27) FDISKPARAM -> RW_path TK_equ TK_path .
 
@@ -943,7 +1101,7 @@ state 58
     $end            reduce using rule 27 (FDISKPARAM -> RW_path TK_equ TK_path .)
 
 
-state 59
+state 70
 
     (28) FDISKPARAM -> RW_name TK_equ TK_id .
 
@@ -964,7 +1122,7 @@ state 59
     $end            reduce using rule 28 (FDISKPARAM -> RW_name TK_equ TK_id .)
 
 
-state 60
+state 71
 
     (29) FDISKPARAM -> RW_unit TK_equ TK_unit .
 
@@ -985,7 +1143,7 @@ state 60
     $end            reduce using rule 29 (FDISKPARAM -> RW_unit TK_equ TK_unit .)
 
 
-state 61
+state 72
 
     (30) FDISKPARAM -> RW_type TK_equ TK_type .
 
@@ -1006,7 +1164,7 @@ state 61
     $end            reduce using rule 30 (FDISKPARAM -> RW_type TK_equ TK_type .)
 
 
-state 62
+state 73
 
     (31) FDISKPARAM -> RW_fit TK_equ TK_fit .
 
@@ -1027,7 +1185,7 @@ state 62
     $end            reduce using rule 31 (FDISKPARAM -> RW_fit TK_equ TK_fit .)
 
 
-state 63
+state 74
 
     (32) FDISKPARAM -> RW_delete TK_equ RW_full .
 
@@ -1048,7 +1206,7 @@ state 63
     $end            reduce using rule 32 (FDISKPARAM -> RW_delete TK_equ RW_full .)
 
 
-state 64
+state 75
 
     (33) FDISKPARAM -> RW_add TK_equ TK_number .
 
@@ -1067,4 +1225,259 @@ state 64
     RW_rep          reduce using rule 33 (FDISKPARAM -> RW_add TK_equ TK_number .)
     commentary      reduce using rule 33 (FDISKPARAM -> RW_add TK_equ TK_number .)
     $end            reduce using rule 33 (FDISKPARAM -> RW_add TK_equ TK_number .)
+
+
+state 76
+
+    (38) REPPARAM -> RW_name TK_equ NAME .
+
+    RW_name         reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    RW_path         reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    RW_id           reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    RW_ruta         reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    RW_execute      reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    RW_mkdisk       reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    RW_rmdisk       reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    RW_fdisk        reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    RW_rep          reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    commentary      reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+    $end            reduce using rule 38 (REPPARAM -> RW_name TK_equ NAME .)
+
+
+state 77
+
+    (42) NAME -> RW_mbr .
+
+    RW_name         reduce using rule 42 (NAME -> RW_mbr .)
+    RW_path         reduce using rule 42 (NAME -> RW_mbr .)
+    RW_id           reduce using rule 42 (NAME -> RW_mbr .)
+    RW_ruta         reduce using rule 42 (NAME -> RW_mbr .)
+    RW_execute      reduce using rule 42 (NAME -> RW_mbr .)
+    RW_mkdisk       reduce using rule 42 (NAME -> RW_mbr .)
+    RW_rmdisk       reduce using rule 42 (NAME -> RW_mbr .)
+    RW_fdisk        reduce using rule 42 (NAME -> RW_mbr .)
+    RW_rep          reduce using rule 42 (NAME -> RW_mbr .)
+    commentary      reduce using rule 42 (NAME -> RW_mbr .)
+    $end            reduce using rule 42 (NAME -> RW_mbr .)
+
+
+state 78
+
+    (43) NAME -> RW_disk .
+
+    RW_name         reduce using rule 43 (NAME -> RW_disk .)
+    RW_path         reduce using rule 43 (NAME -> RW_disk .)
+    RW_id           reduce using rule 43 (NAME -> RW_disk .)
+    RW_ruta         reduce using rule 43 (NAME -> RW_disk .)
+    RW_execute      reduce using rule 43 (NAME -> RW_disk .)
+    RW_mkdisk       reduce using rule 43 (NAME -> RW_disk .)
+    RW_rmdisk       reduce using rule 43 (NAME -> RW_disk .)
+    RW_fdisk        reduce using rule 43 (NAME -> RW_disk .)
+    RW_rep          reduce using rule 43 (NAME -> RW_disk .)
+    commentary      reduce using rule 43 (NAME -> RW_disk .)
+    $end            reduce using rule 43 (NAME -> RW_disk .)
+
+
+state 79
+
+    (44) NAME -> RW_inode .
+
+    RW_name         reduce using rule 44 (NAME -> RW_inode .)
+    RW_path         reduce using rule 44 (NAME -> RW_inode .)
+    RW_id           reduce using rule 44 (NAME -> RW_inode .)
+    RW_ruta         reduce using rule 44 (NAME -> RW_inode .)
+    RW_execute      reduce using rule 44 (NAME -> RW_inode .)
+    RW_mkdisk       reduce using rule 44 (NAME -> RW_inode .)
+    RW_rmdisk       reduce using rule 44 (NAME -> RW_inode .)
+    RW_fdisk        reduce using rule 44 (NAME -> RW_inode .)
+    RW_rep          reduce using rule 44 (NAME -> RW_inode .)
+    commentary      reduce using rule 44 (NAME -> RW_inode .)
+    $end            reduce using rule 44 (NAME -> RW_inode .)
+
+
+state 80
+
+    (45) NAME -> RW_journaling .
+
+    RW_name         reduce using rule 45 (NAME -> RW_journaling .)
+    RW_path         reduce using rule 45 (NAME -> RW_journaling .)
+    RW_id           reduce using rule 45 (NAME -> RW_journaling .)
+    RW_ruta         reduce using rule 45 (NAME -> RW_journaling .)
+    RW_execute      reduce using rule 45 (NAME -> RW_journaling .)
+    RW_mkdisk       reduce using rule 45 (NAME -> RW_journaling .)
+    RW_rmdisk       reduce using rule 45 (NAME -> RW_journaling .)
+    RW_fdisk        reduce using rule 45 (NAME -> RW_journaling .)
+    RW_rep          reduce using rule 45 (NAME -> RW_journaling .)
+    commentary      reduce using rule 45 (NAME -> RW_journaling .)
+    $end            reduce using rule 45 (NAME -> RW_journaling .)
+
+
+state 81
+
+    (46) NAME -> RW_block .
+
+    RW_name         reduce using rule 46 (NAME -> RW_block .)
+    RW_path         reduce using rule 46 (NAME -> RW_block .)
+    RW_id           reduce using rule 46 (NAME -> RW_block .)
+    RW_ruta         reduce using rule 46 (NAME -> RW_block .)
+    RW_execute      reduce using rule 46 (NAME -> RW_block .)
+    RW_mkdisk       reduce using rule 46 (NAME -> RW_block .)
+    RW_rmdisk       reduce using rule 46 (NAME -> RW_block .)
+    RW_fdisk        reduce using rule 46 (NAME -> RW_block .)
+    RW_rep          reduce using rule 46 (NAME -> RW_block .)
+    commentary      reduce using rule 46 (NAME -> RW_block .)
+    $end            reduce using rule 46 (NAME -> RW_block .)
+
+
+state 82
+
+    (47) NAME -> RW_bm_inode .
+
+    RW_name         reduce using rule 47 (NAME -> RW_bm_inode .)
+    RW_path         reduce using rule 47 (NAME -> RW_bm_inode .)
+    RW_id           reduce using rule 47 (NAME -> RW_bm_inode .)
+    RW_ruta         reduce using rule 47 (NAME -> RW_bm_inode .)
+    RW_execute      reduce using rule 47 (NAME -> RW_bm_inode .)
+    RW_mkdisk       reduce using rule 47 (NAME -> RW_bm_inode .)
+    RW_rmdisk       reduce using rule 47 (NAME -> RW_bm_inode .)
+    RW_fdisk        reduce using rule 47 (NAME -> RW_bm_inode .)
+    RW_rep          reduce using rule 47 (NAME -> RW_bm_inode .)
+    commentary      reduce using rule 47 (NAME -> RW_bm_inode .)
+    $end            reduce using rule 47 (NAME -> RW_bm_inode .)
+
+
+state 83
+
+    (48) NAME -> RW_bm_block .
+
+    RW_name         reduce using rule 48 (NAME -> RW_bm_block .)
+    RW_path         reduce using rule 48 (NAME -> RW_bm_block .)
+    RW_id           reduce using rule 48 (NAME -> RW_bm_block .)
+    RW_ruta         reduce using rule 48 (NAME -> RW_bm_block .)
+    RW_execute      reduce using rule 48 (NAME -> RW_bm_block .)
+    RW_mkdisk       reduce using rule 48 (NAME -> RW_bm_block .)
+    RW_rmdisk       reduce using rule 48 (NAME -> RW_bm_block .)
+    RW_fdisk        reduce using rule 48 (NAME -> RW_bm_block .)
+    RW_rep          reduce using rule 48 (NAME -> RW_bm_block .)
+    commentary      reduce using rule 48 (NAME -> RW_bm_block .)
+    $end            reduce using rule 48 (NAME -> RW_bm_block .)
+
+
+state 84
+
+    (49) NAME -> RW_tree .
+
+    RW_name         reduce using rule 49 (NAME -> RW_tree .)
+    RW_path         reduce using rule 49 (NAME -> RW_tree .)
+    RW_id           reduce using rule 49 (NAME -> RW_tree .)
+    RW_ruta         reduce using rule 49 (NAME -> RW_tree .)
+    RW_execute      reduce using rule 49 (NAME -> RW_tree .)
+    RW_mkdisk       reduce using rule 49 (NAME -> RW_tree .)
+    RW_rmdisk       reduce using rule 49 (NAME -> RW_tree .)
+    RW_fdisk        reduce using rule 49 (NAME -> RW_tree .)
+    RW_rep          reduce using rule 49 (NAME -> RW_tree .)
+    commentary      reduce using rule 49 (NAME -> RW_tree .)
+    $end            reduce using rule 49 (NAME -> RW_tree .)
+
+
+state 85
+
+    (50) NAME -> RW_sb .
+
+    RW_name         reduce using rule 50 (NAME -> RW_sb .)
+    RW_path         reduce using rule 50 (NAME -> RW_sb .)
+    RW_id           reduce using rule 50 (NAME -> RW_sb .)
+    RW_ruta         reduce using rule 50 (NAME -> RW_sb .)
+    RW_execute      reduce using rule 50 (NAME -> RW_sb .)
+    RW_mkdisk       reduce using rule 50 (NAME -> RW_sb .)
+    RW_rmdisk       reduce using rule 50 (NAME -> RW_sb .)
+    RW_fdisk        reduce using rule 50 (NAME -> RW_sb .)
+    RW_rep          reduce using rule 50 (NAME -> RW_sb .)
+    commentary      reduce using rule 50 (NAME -> RW_sb .)
+    $end            reduce using rule 50 (NAME -> RW_sb .)
+
+
+state 86
+
+    (51) NAME -> RW_file .
+
+    RW_name         reduce using rule 51 (NAME -> RW_file .)
+    RW_path         reduce using rule 51 (NAME -> RW_file .)
+    RW_id           reduce using rule 51 (NAME -> RW_file .)
+    RW_ruta         reduce using rule 51 (NAME -> RW_file .)
+    RW_execute      reduce using rule 51 (NAME -> RW_file .)
+    RW_mkdisk       reduce using rule 51 (NAME -> RW_file .)
+    RW_rmdisk       reduce using rule 51 (NAME -> RW_file .)
+    RW_fdisk        reduce using rule 51 (NAME -> RW_file .)
+    RW_rep          reduce using rule 51 (NAME -> RW_file .)
+    commentary      reduce using rule 51 (NAME -> RW_file .)
+    $end            reduce using rule 51 (NAME -> RW_file .)
+
+
+state 87
+
+    (52) NAME -> RW_ls .
+
+    RW_name         reduce using rule 52 (NAME -> RW_ls .)
+    RW_path         reduce using rule 52 (NAME -> RW_ls .)
+    RW_id           reduce using rule 52 (NAME -> RW_ls .)
+    RW_ruta         reduce using rule 52 (NAME -> RW_ls .)
+    RW_execute      reduce using rule 52 (NAME -> RW_ls .)
+    RW_mkdisk       reduce using rule 52 (NAME -> RW_ls .)
+    RW_rmdisk       reduce using rule 52 (NAME -> RW_ls .)
+    RW_fdisk        reduce using rule 52 (NAME -> RW_ls .)
+    RW_rep          reduce using rule 52 (NAME -> RW_ls .)
+    commentary      reduce using rule 52 (NAME -> RW_ls .)
+    $end            reduce using rule 52 (NAME -> RW_ls .)
+
+
+state 88
+
+    (39) REPPARAM -> RW_path TK_equ TK_path .
+
+    RW_name         reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    RW_path         reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    RW_id           reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    RW_ruta         reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    RW_execute      reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    RW_mkdisk       reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    RW_rmdisk       reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    RW_fdisk        reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    RW_rep          reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    commentary      reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+    $end            reduce using rule 39 (REPPARAM -> RW_path TK_equ TK_path .)
+
+
+state 89
+
+    (40) REPPARAM -> RW_id TK_equ TK_id .
+
+    RW_name         reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    RW_path         reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    RW_id           reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    RW_ruta         reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    RW_execute      reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    RW_mkdisk       reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    RW_rmdisk       reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    RW_fdisk        reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    RW_rep          reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    commentary      reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+    $end            reduce using rule 40 (REPPARAM -> RW_id TK_equ TK_id .)
+
+
+state 90
+
+    (41) REPPARAM -> RW_ruta TK_equ TK_path .
+
+    RW_name         reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    RW_path         reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    RW_id           reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    RW_ruta         reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    RW_execute      reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    RW_mkdisk       reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    RW_rmdisk       reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    RW_fdisk        reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    RW_rep          reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    commentary      reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
+    $end            reduce using rule 41 (REPPARAM -> RW_ruta TK_equ TK_path .)
 

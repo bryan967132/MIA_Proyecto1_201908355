@@ -108,9 +108,46 @@ def p_FDISKPARAM(t):
     t[0] = [t[1][1:].lower(), t[3]]
 
 def p_REP(t):
-    '''REP : RW_rep'''
-    t[0] = Rep()
-    t[0].exec()
+    '''REP  : RW_rep REPPARAMS
+            | RW_rep'''
+    if len(t) != 2:
+        t[0] = Rep()
+        t[0].setParams(t[2])
+        t[0].exec()
+    else:
+        t[0] = Rep()
+        t[0].setParams({})
+        t[0].exec()
+
+def p_REPPARAMS(t):
+    '''REPPARAMS    : REPPARAMS REPPARAM
+                    | REPPARAM'''
+    if len(t) != 2:
+        t[1][t[2][0]] = t[2][1]
+        t[0] = t[1]
+    else:
+        t[0] = {t[1][0]: t[1][1]}
+
+def p_REPPARAM(t):
+    '''REPPARAM : RW_name TK_equ NAME
+                | RW_path TK_equ TK_path
+                | RW_id   TK_equ TK_id
+                | RW_ruta TK_equ TK_path'''
+    t[0] = [t[1][1:].lower(), t[3]]
+
+def p_NAME(t):
+    '''NAME : RW_mbr
+            | RW_disk
+            | RW_inode
+            | RW_journaling
+            | RW_block
+            | RW_bm_inode
+            | RW_bm_block
+            | RW_tree
+            | RW_sb
+            | RW_file
+            | RW_ls'''
+    t[0] = t[1]
 
 def p_COMMENTARY(t):
     '''COMMENTARY : commentary'''
