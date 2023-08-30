@@ -1,0 +1,39 @@
+# DISCO 5
+# Creación de Disco5 (10 MB)
+mkdisk -size=10 -unit=M -path="../Disks/Disco5.dsk" -fit=WF
+
+# Creación de Part3MB en Disco5 (3 MB)
+fdisk -Path="../Disks/Disco5.dsk" -Unit=M  -name=Part3MB -size=3
+
+# Reporte Disco5 despues de Part3MB
+rep -id=061Disco5 -path=../RepDisco5/Disco5_1.jpg -name=DISK
+
+# Creación de Part512KB en Disco5 (512 KB)
+fdisk -path="../Disks/Disco5.dsk" -unit=K -name=Part512KB -size=512
+
+# Reporte Disco5 despues de Part512KB
+rep -id=061Disco5 -path=../RepDisco5/Disco5_2.jpg -name=DISK
+
+# Creación de Part2MB en Disco5 (2 MB)
+fdisk -path="../Disks/Disco5.dsk" -unit=M -Name=Part2MB -SIZE=2
+
+# Reporte Disco5 despues de Part2MB
+rep -id=061Disco5 -path=../RepDisco5/Disco5_3.jpg -name=DISK
+
+# Creación de Part1MB en Disco5 (1 MB)
+fdisk -path="../Disks/Disco5.dsk" -unit=m -size=1 -name=Part1MB
+
+# Reporte Disco5 despues de Part1MB
+rep -id=061Disco5 -path=../RepDisco5/Disco5_4.jpg -name=DISK
+
+# Eliminación de Part512KB en Disco5
+fdisk -path="../Disks/Disco5.dsk" -name=Part512KB -delete=full
+
+# Reporte Disco5 despues de Part512KB
+rep -id=061Disco5 -path=../RepDisco5/Disco5_5.jpg -name=DISK
+
+# Creación de Nueva256KB en Disco5 (256 KB)
+fdisk -path="../Disks/Disco5.dsk" -unit=k -size=256 -name=Nueva256KB
+
+# Reporte Disco5 despues de Nueva256KB
+rep -id=061Disco5 -path=../RepDisco5/Disco5_6.jpg -name=DISK
