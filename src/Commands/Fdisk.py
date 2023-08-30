@@ -146,19 +146,15 @@ class Fdisk:
             for i in range(len(mbr.partitions)):
                 if mbr.partitions[i].status:
                     if mbr.partitions[i].start - lastNoEmptyByte > 1 and mbr.partitions[i].start - lastNoEmptyByte >= self.params['size'] * units:
-                        print([lastNoEmptyByte + 1, mbr.partitions[i].start - lastNoEmptyByte])
                         disponible.append([lastNoEmptyByte + 1, mbr.partitions[i].start - lastNoEmptyByte])
                     lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
             if mbr.size - lastNoEmptyByte  > 1 and mbr.size - lastNoEmptyByte >= self.params['size'] * units:
-                print("FINAL", [lastNoEmptyByte + 1, mbr.size - lastNoEmptyByte - 1])
                 disponible.append([lastNoEmptyByte + 1, mbr.size - lastNoEmptyByte - 1])
             if len(disponible) > 0:
-                print(mbr.fit)
                 if mbr.fit == 'B':
                     disponible = self.__sortBestFit(disponible)
                 elif mbr.fit == 'W':
                     disponible = self.__sortWorstFit(disponible)
-                print(disponible)
                 for i in range(len(mbr.partitions)):
                     if not mbr.partitions[i].status:
                         mbr.partitions[i] = Partition(
