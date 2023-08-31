@@ -13,11 +13,11 @@ class Mkdisk:
             if self.params['size'] < 0:
                 self.printError(' -> Error: El tamaño de la partición debe ser mayor que cero')
                 return
-            k = 1
+            units = 1
             if self.params['unit'] == 'M':
-                k = 1024 * 1024
+                units = 1024 * 1024
             elif self.params['unit'] == 'K':
-                k = 1024
+                units = 1024
             else:
                 self.printError(' -> Error mkdisk: Unidad de Bytes Incorrecta')
                 return
@@ -27,16 +27,16 @@ class Mkdisk:
             if not os.path.exists(directory):
                 os.makedirs(directory)
             self.params['fit'] = self.params['fit'][:1]
-            mbr = MBR(size = self.params['size'] * k, fit = self.params['fit'])
+            mbr = MBR(size = self.params['size'] * units, fit = self.params['fit'])
             disks[os.path.basename(self.params['path']).split('.')[0]] = os.path.abspath(self.params['path'])
             with open(self.params['path'], 'wb') as file:
                 byte = b'\x00'
                 for i in range(self.params['size']):
-                    file.write(byte * k)
+                    file.write(byte * units)
             with open(self.params['path'], 'r+b') as file:
                 file.seek(0)
                 file.write(mbr.encode())
-            self.printSuccess(f' -> mkdisk: {os.path.basename(absolutePath).split(".")[0]}')
+            self.printSuccess(f' -> mkdisk: {os.path.basename(absolutePath).split(".")[0]} creado exitosamente. ({self.params["size"]} {self.params["unit"]}B)')
         else:
             self.printError(' -> Error mkdisk: Faltan Parámetros Obligatorios.')
 
