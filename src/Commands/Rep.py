@@ -1,4 +1,5 @@
 from Structures.MBR import *
+from Structures.EBR import *
 from Env.Env import *
 import os
 
@@ -45,37 +46,60 @@ class Rep:
             with open(absolutePath, 'rb') as file:
                 readed_bytes = file.read(127)
                 mbr = MBR.decode(readed_bytes)
-                isThereEmpty = False
                 lastNoEmptyByte = 126
                 dotParts = ''
-                ocuppedCells = 10
+                occupiedCells = 10
+                extendedParts = ''
                 for i in range(len(mbr.partitions)):
                     if mbr.partitions[i].status:
-                        if isThereEmpty or mbr.partitions[i].start - lastNoEmptyByte > 1:
+                        if mbr.partitions[i].start - lastNoEmptyByte > 1:
                             space = round(((mbr.partitions[i].start - (lastNoEmptyByte + 1)) / mbr.size) * 200, 2)
-                            ocuppedCells += int(space)
+                            occupiedCells += int(space)
                             dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">Libre<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
                         space = round((mbr.partitions[i].size / mbr.size) * 200, 2)
-                        ocuppedCells += int(space)
                         if mbr.partitions[i].type == 'P':
+                            occupiedCells += int(space)
                             dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">{mbr.partitions[i].name.strip()}<BR/>Primaria<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
-                        elif mbr.partitions[i].type == 'M':
-                            dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">{mbr.partitions[i].name.strip()}<BR/>Extendida<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
+                        elif mbr.partitions[i].type == 'E':
+                            extendedParts = '\n\t\t<TR>'
+                            file.seek(mbr.partitions[i].start)
+                            ebr = EBR.decode(file.read(30))
+                            lastNoEmptyByteExt = mbr.partitions[i].start + 30
+                            occupiedExtend = 0
+                            if ebr.status:
+                                while True:
+                                    extendedParts += '\n\t\t\t<TD COLSPAN="10" ROWSPAN="5">EBR</TD>'
+                                    space = round((ebr.size / mbr.size) * 200, 2)
+                                    extendedParts += f'\n\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">{mbr.partitions[i].name.strip()}<BR/>Logica<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
+                                    lastNoEmptyByteExt = ebr.start + ebr.size - 1
+                                    occupiedExtend += 10 + int(space)
+                                    if ebr.next == -1:
+                                        break
+                                    file.seek(ebr.next)
+                                    ebr = EBR.decode(file.read(30))
+                            else:
+                                occupiedExtend += 10
+                                extendedParts += '\n\t\t\t<TD COLSPAN="10" ROWSPAN="5">EBR</TD>'
+                            if lastNoEmptyByteExt < mbr.partitions[i].start + mbr.partitions[i].size:
+                                space = round(((mbr.partitions[i].start + mbr.partitions[i].size - (lastNoEmptyByteExt + 1)) / mbr.size) * 200, 2)
+                                extendedParts += f'\n\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">Libre<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
+                                occupiedExtend += int(space)
+                            extendedParts += '\n\t\t</TR>'
+                            occupiedCells += occupiedExtend
+                            dotParts += f'\n\t\t\t\t<TD COLSPAN="{occupiedExtend}" ROWSPAN="1">{mbr.partitions[i].name.strip()}<BR/>Extendida</TD>'
                         lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
-                        isThereEmpty = False
-                    else:
-                        isThereEmpty = True
                 if lastNoEmptyByte < mbr.size:
                     space = round(((mbr.size - (lastNoEmptyByte + 1)) / mbr.size) * 200, 2)
                     dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">Libre<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
-                    ocuppedCells += int(space)
+                    occupiedCells += int(space)
 
                 dot = 'digraph Disk{\n\tnode [shape=plaintext];'
                 dot += '\n\ttabla[label=<\n\t\t<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="2" CELLPADDING="4">'
-                dot += f'\n\t\t\t<TR>\n\t\t\t\t<TD COLSPAN="{ocuppedCells}">{self.params["id"][3:]}</TD>\n\t\t\t</TR>'
+                dot += f'\n\t\t\t<TR>\n\t\t\t\t<TD COLSPAN="{occupiedCells}">{self.params["id"][3:]}</TD>\n\t\t\t</TR>'
                 dot += '\n\t\t\t<TR>\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="6">MBR</TD>'
                 dot += dotParts
                 dot += '\n\t\t\t</TR>'
+                dot += extendedParts
                 dot += '\n\t\t</TABLE>\n\t>];'
                 dot += '\n}'
                 self.__generateFile(dot)
@@ -92,7 +116,7 @@ class Rep:
         with open(absolutePathDot, 'w') as file:
             file.write(dot)
         os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
-        os.remove(absolutePath.replace(extension, "dot"))
+        # os.remove(absolutePath.replace(extension, "dot"))
 
     def porcentaje(self, number : float) -> int or float:
         num = number - int(number)

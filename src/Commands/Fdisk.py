@@ -1,4 +1,6 @@
 from Structures.MBR import *
+from Structures.EBR import *
+from typing import List
 import os
 
 class Fdisk:
@@ -141,38 +143,76 @@ class Fdisk:
             readed_bytes = file.read(127)
             mbr = MBR.decode(readed_bytes)
             self.params['fit'] = self.params['fit'][:1]
-            disponible = []
-            lastNoEmptyByte = 126
-            for i in range(len(mbr.partitions)):
-                if mbr.partitions[i].status:
-                    if mbr.partitions[i].start - lastNoEmptyByte > 1 and mbr.partitions[i].start - lastNoEmptyByte >= self.params['size'] * units:
-                        disponible.append([lastNoEmptyByte + 1, mbr.partitions[i].start - lastNoEmptyByte])
-                    lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
-            if mbr.size - lastNoEmptyByte  > 1 and mbr.size - lastNoEmptyByte >= self.params['size'] * units:
-                disponible.append([lastNoEmptyByte + 1, mbr.size - lastNoEmptyByte - 1])
-            if len(disponible) > 0:
-                if mbr.fit == 'B':
-                    disponible = self.__sortBestFit(disponible)
-                elif mbr.fit == 'W':
-                    disponible = self.__sortWorstFit(disponible)
+            if self.params['type'] == 'P' or self.params['type'] == 'E':
+                disponible = []
+                lastNoEmptyByte = 126
                 for i in range(len(mbr.partitions)):
-                    if not mbr.partitions[i].status:
-                        mbr.partitions[i] = Partition(
-                            '0',
-                            self.params['type'],
-                            self.params['fit'],
-                            disponible[0][0],
-                            self.params['size'] * units,
-                            self.params['name'][:16].ljust(16)
-                        )
-                        mbr.partitions = self.__sortOrder(mbr.partitions)
-                        with open(self.params['path'], 'r+b') as file:
-                            file.seek(0)
-                            file.write(mbr.encode())
+                    if mbr.partitions[i].status:
+                        if mbr.partitions[i].start - lastNoEmptyByte > 1 and mbr.partitions[i].start - lastNoEmptyByte >= self.params['size'] * units:
+                            disponible.append([lastNoEmptyByte + 1, mbr.partitions[i].start - lastNoEmptyByte])
+                        lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
+                if mbr.size - lastNoEmptyByte  > 1 and mbr.size - lastNoEmptyByte >= self.params['size'] * units:
+                    disponible.append([lastNoEmptyByte + 1, mbr.size - lastNoEmptyByte - 1])
+                if len(disponible) > 0:
+                    if mbr.fit == 'B':
+                        disponible = self.__sortBestFit(disponible)
+                    elif mbr.fit == 'W':
+                        disponible = self.__sortWorstFit(disponible)
+                    if self.params['type'] == 'E' and self.__getExtended(mbr.partitions) != -1:
+                        self.printError(' -> Error fdisk: Ya existe una partición extendida.')
                         return
-                self.printError(' -> Error fdisk: No pueden crearse mas particiones.')
-            else:
-                self.printError(' -> Error fdisk: No hay espacio suficiente para la nueva partición.')
+                    for i in range(len(mbr.partitions)):
+                        if not mbr.partitions[i].status:
+                            mbr.partitions[i] = Partition(
+                                '0',
+                                self.params['type'],
+                                self.params['fit'],
+                                disponible[0][0],
+                                self.params['size'] * units,
+                                self.params['name'][:16].ljust(16)
+                            )
+                            mbr.partitions = self.__sortOrder(mbr.partitions)
+                            with open(self.params['path'], 'r+b') as file:
+                                file.seek(0)
+                                file.write(mbr.encode())
+                                if self.params['type'] == 'E':
+                                    file.seek(mbr.partitions[i].start)
+                                    file.write(EBR().encode())
+                            return
+                    self.printError(' -> Error fdisk: No pueden crearse mas particiones.')
+                else:
+                    self.printError(' -> Error fdisk: No hay espacio suficiente para la nueva partición.')
+            elif self.params['type'] == 'L':
+                i = self.__getExtended(mbr.partitions)
+                if i != -1:
+                    file.seek(mbr.partitions[i].start)
+                    ebr = EBR.decode(file.read(30))
+                    startEBR = mbr.partitions[i].start
+                    while ebr.next != -1:
+                        file.seek(ebr.next)
+                        ebr = EBR.decode(file.read(30))
+                        startEBR = ebr.next
+                    ebr = EBR(
+                        '0',
+                        self.params['fit'],
+                        startEBR + 30,
+                        self.params['size'] * units,
+                        -1,
+                        self.params['name'][:16].ljust(16)
+                    )
+                    print(ebr, self.params['fit'])
+                    with open(self.params['path'], 'r+b') as file:
+                        file.seek(startEBR)
+                        file.write(ebr.encode(True))
+                    return
+                self.printError(' -> Error fdisk: No existe una partición extendida para crear la partición lógica.')
+            
+
+    def __getExtended(self, partitions : List[Partition]):
+        for i in range(len(partitions)):
+            if partitions[i].type == 'E':
+                return i
+        return -1
 
     def __sortBestFit(self, disponible):
         if len(disponible) > 1:
@@ -253,5 +293,4 @@ class Fdisk:
         print(f"\033[{31}m{text}\033[0m")
 
     def __str__(self) -> str:
-        return 'Fdisk'
-    
+        return 'Fdisk'    

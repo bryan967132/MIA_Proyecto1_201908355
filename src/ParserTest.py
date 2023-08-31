@@ -1,7 +1,7 @@
 from Language.Parser import *
 
 def parserTest():
-    input = 'execute -path = ../scriptFF.adsj'
+    input = 'execute -path = ../scriptExtended.adsj'
     Scanner.lineno = 1
     e = parser.parse(input)
     e[0].exec(parser)
