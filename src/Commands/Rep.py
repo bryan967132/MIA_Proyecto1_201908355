@@ -117,7 +117,7 @@ class Rep:
             file.write(dot)
         os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
         # os.remove(absolutePath.replace(extension, "dot"))
-        self.printSuccess(self.params['name'], self.params['id'][3:])
+        self.printSuccess(self.params['name'].lower(), self.params['id'][3:])
 
     def porcentaje(self, number : float) -> int or float:
         num = number - int(number)
@@ -129,7 +129,7 @@ class Rep:
         print(f"\033[{31}m{text}\033[0m")
 
     def printSuccess(self, type, diskname):
-        print(f"\033[{35}m -> rep: Reporte generado exitosamente. {type} {diskname}\033[0m")
+        print(f"\033[{35}m -> rep: Reporte generado exitosamente. '{type}' {diskname}\033[0m")
 
     def __str__(self) -> str:
         return 'Rep'
