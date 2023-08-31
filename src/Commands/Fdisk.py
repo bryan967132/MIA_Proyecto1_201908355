@@ -35,7 +35,7 @@ class Fdisk:
             readed_bytes = file.read(127)
             mbr = MBR.decode(readed_bytes)
             for i in range(len(mbr.partitions)):
-                if mbr.partitions[i].name.strip() == self.params['name']:
+                if mbr.partitions[i].status and mbr.partitions[i].name.strip() == self.params['name']:
                     while True:
                         confirm = input(f"\033[33m -> Eliminar partición {self.params['name']} de disco {os.path.basename(absolutePath).split('.')[0]} (y/n): \033[0m")
                         if confirm.lower().strip() == 'y':
