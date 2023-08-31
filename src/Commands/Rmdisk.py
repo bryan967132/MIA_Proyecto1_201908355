@@ -19,9 +19,12 @@ class Rmdisk:
                 break
             elif confirm.lower() == 'n':
                 return
-        del disks[os.path.basename(self.path).split('.')[0]]
+        del disks[os.path.basename(absolutePath).split('.')[0]]
         os.remove(self.path)
-
+        self.printSuccess(f' -> rmdisk: Disco {os.path.basename(absolutePath).split(".")[0]} elminado exitosamente.')
 
     def printError(self, text):
         print(f"\033[{31}m{text}\033[0m")
+
+    def printSuccess(self, text):
+        print(f"\033[96m{text}\033[0m")
