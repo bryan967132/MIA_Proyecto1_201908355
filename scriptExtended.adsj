@@ -9,5 +9,3 @@ fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=PartL1_1KB -SIZE=1 -type=L
 rep -id=061Disco6 -path=../RepDisco6/Disco6_4.jpg -name=DISK
 fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=PartL2_1KB -SIZE=1 -type=L
 rep -id=061Disco6 -path=../RepDisco6/Disco6_5.jpg -name=DISK
-#fdisk -delete=full -Path=../Disks/Disco6.dsk -name=PartP1_3KB
-#rep -id=061Disco6 -path=../RepDisco6/Disco6_6.jpg -name=DISK
