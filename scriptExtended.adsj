@@ -1,27 +1,13 @@
-# DISCO 6
-# Creación de Disco6 (10 KB)
 mkdisk -size=10 -unit=K -path="../Disks/Disco6.dsk" -fit=WF
-
-# Creación de Part3KB en Disco6 (3 KB)
-fdisk -Path="../Disks/Disco6.dsk" -Unit=K  -name=Part3KB -size=3 -type=P
-
-# Reporte Disco6 despues de Part3KB
+fdisk -Path=../Disks/Disco6.dsk -Unit=K -name=PartP1_3KB -size=3 -type=P
 rep -id=061Disco6 -path=../RepDisco6/Disco6_1.jpg -name=DISK
-
-# Creación de Part4KB en Disco6 (4 KB) Extendida
-fdisk -path="../Disks/Disco6.dsk" -unit=K -name=Part4KB -size=4 -type=E
-
-# Reporte Disco6 despues de Part4KB Extendida
+fdisk -path="../Disks/Disco6.dsk" -unit=K -name=PartE2_4KB -size=4 -type=E
 rep -id=061Disco6 -path=../RepDisco6/Disco6_2.jpg -name=DISK
-
-# Creación de Part2KB en Disco6 (2 KB)
-fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=Part2KB -SIZE=2 -type=P
-
-# Reporte Disco6 despues de Part2KB
+fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=PartP3_2KB -SIZE=2 -type=P
 rep -id=061Disco6 -path=../RepDisco6/Disco6_3.jpg -name=DISK
-
-# Creación de Part1KB en Disco6 (1 KB) Logica
-fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=Part1KB -SIZE=1 -type=L
-
-# Reporte Disco6 despues de Part1KB Logica
-rep -id=061Disco6 -path=../RepDisco6/Disco6_3.jpg -name=DISK
+fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=PartL1_1KB -SIZE=1 -type=L
+rep -id=061Disco6 -path=../RepDisco6/Disco6_4.jpg -name=DISK
+fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=PartL2_1KB -SIZE=1 -type=L
+rep -id=061Disco6 -path=../RepDisco6/Disco6_5.jpg -name=DISK
+#fdisk -delete=full -Path=../Disks/Disco6.dsk -name=PartP1_3KB
+#rep -id=061Disco6 -path=../RepDisco6/Disco6_6.jpg -name=DISK
