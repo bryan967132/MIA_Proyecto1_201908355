@@ -37,10 +37,10 @@ class Fdisk:
             for i in range(len(mbr.partitions)):
                 if mbr.partitions[i].name.strip() == self.params['name']:
                     while True:
-                        confirm = input(f"\033[33mEliminar la partición (y/n): \033[0m")
-                        if confirm.lower() == 'y':
+                        confirm = input(f"\033[33m -> Eliminar partición {self.params['name']} de disco {os.path.basename(absolutePath).split('.')[0]} (y/n): \033[0m")
+                        if confirm.lower().strip() == 'y':
                             break
-                        elif confirm.lower() == 'n':
+                        elif confirm.lower().strip() == 'n':
                             return
                     mbr.partitions.pop(i)
                     mbr.partitions.append(Partition())
@@ -266,41 +266,27 @@ class Fdisk:
         return False
 
     def __validateParamsDelete(self):
-        for k in self.params:
-            if k == 'path':
-                path = True
-            elif k == 'name':
-                name = True
-        return path and name
+        if 'path' in self.params and 'name' in self.params:
+            return True
+        return False
 
     def __isAdd(self):
-        for k in self.params:
-            if k == 'add':
-                self.params[k] = int(self.params[k])
-                return True
+        if 'add' in self.params:
+            self.params['add'] = int(self.params['add'])
+            return True
         return False
 
     def __validateParamsAdd(self):
-        for k in self.params:
-            if k == 'path':
-                path = True
-            elif k == 'name':
-                name = True
-            elif k == 'unit':
-                self.params[k] = self.params[k].upper()
-                unit = True
-        return path and name and unit
+        if 'path' in self.params and 'name' in self.params and 'unit' in self.params:
+            self.params['unit'] = self.params['unit'].upper()
+            return True
+        return False
 
     def __validateParams(self):
-        for k in self.params:
-            if k == 'size':
-                self.params[k] = int(self.params[k])
-                size = True
-            elif k == 'path':
-                path = True
-            elif k == 'name':
-                name = True
-        return size and path and name
+        if 'size' in self.params and 'path' in self.params and 'name' in self.params:
+            self.params['size'] = int(self.params['size'])
+            return True
+        return False
 
     def printError(self, text):
         print(f"\033[31m{text}\033[0m")

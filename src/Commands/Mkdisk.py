@@ -41,15 +41,10 @@ class Mkdisk:
             self.printError(' -> Error mkdisk: Faltan Parámetros Obligatorios.')
 
     def __validateParams(self):
-        size = False
-        path = False
-        for k in self.params:
-            if k == 'size':
-                self.params[k] = int(self.params[k])
-                size = True
-            elif k == 'path':
-                path = True
-        return size and path
+        if 'size' in self.params and 'path' in self.params:
+            self.params['size'] = int(self.params['size'])
+            return True
+        return False
 
     def printError(self, text):
         print(f"\033[{31}m{text}\033[0m")

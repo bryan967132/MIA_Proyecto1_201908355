@@ -14,7 +14,7 @@ class Rmdisk:
             self.printError(' -> Error rmdisk: No existe el disco que quiere eliminar.')
             return
         while True:
-            confirm = input('Eliminar el disco (y/n): ')
+            confirm = input(f"\033[33m -> Eliminar disco {os.path.basename(absolutePath).split('.')[0]} (y/n): \033[0m")
             if confirm.lower() == 'y':
                 break
             elif confirm.lower() == 'n':
