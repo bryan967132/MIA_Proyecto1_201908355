@@ -36,6 +36,7 @@ class Mkdisk:
             with open(self.params['path'], 'r+b') as file:
                 file.seek(0)
                 file.write(mbr.encode())
+            self.printSuccess(f' -> mkdisk: {os.path.basename(absolutePath).split(".")[0]}')
         else:
             self.printError(' -> Error mkdisk: Faltan Parámetros Obligatorios.')
 
@@ -52,6 +53,9 @@ class Mkdisk:
 
     def printError(self, text):
         print(f"\033[{31}m{text}\033[0m")
+
+    def printSuccess(self, text):
+        print(f"\033[96m{text}\033[0m")
 
     def __str__(self) -> str:
         return 'Mkdisk'
