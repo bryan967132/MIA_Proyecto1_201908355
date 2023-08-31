@@ -206,17 +206,30 @@ class Fdisk:
                         break
                     with open(self.params['path'], 'r+b') as file:
                         if prevEbr:
-                            pass
-                        ebr = EBR(
-                            '0',
-                            self.params['fit'],
-                            startEBR + 30,
-                            self.params['size'] * units,
-                            -1,
-                            self.params['name'][:16].ljust(16)
-                        )
-                        file.seek(startEBR)
-                        file.write(ebr.encode(True))
+                            prevEbr.next = prevEbr.start + prevEbr.size
+                            file.seek(prevStartEBR)
+                            file.write(prevEbr.encode(True))
+                            ebr = EBR(
+                                '0',
+                                self.params['fit'],
+                                prevEbr.next + 30,
+                                self.params['size'] * units,
+                                -1,
+                                self.params['name'][:16].ljust(16)
+                            )
+                            file.seek(prevEbr.next)
+                            file.write(ebr.encode(True))
+                        else:
+                            ebr = EBR(
+                                '0',
+                                self.params['fit'],
+                                startEBR + 30,
+                                self.params['size'] * units,
+                                -1,
+                                self.params['name'][:16].ljust(16)
+                            )
+                            file.seek(startEBR)
+                            file.write(ebr.encode(True))
                     self.printSuccessCreate(os.path.basename(absolutePath).split(".")[0], self.params["name"], self.params['type'], self.params["size"], self.params["unit"])
                     return
                 self.printError(f' -> Error fdisk: No existe una partición extendida en {os.path.basename(absolutePath).split(".")[0]} para crear la partición lógica.')
