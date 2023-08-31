@@ -200,7 +200,6 @@ class Fdisk:
                         -1,
                         self.params['name'][:16].ljust(16)
                     )
-                    print(ebr, self.params['fit'])
                     with open(self.params['path'], 'r+b') as file:
                         file.seek(startEBR)
                         file.write(ebr.encode(True))
