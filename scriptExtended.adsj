@@ -1,11 +1,16 @@
 mkdisk -size=10 -unit=K -path="../Disks/Disco6.dsk" -fit=WF
 fdisk -Path=../Disks/Disco6.dsk -Unit=K -name=PartP1_3KB -size=3 -type=P
-rep -id=061Disco6 -path=../RepDisco6/Disco6_1.jpg -name=DISK
-fdisk -path="../Disks/Disco6.dsk" -unit=K -name=PartE2_4KB -size=4 -type=E
-rep -id=061Disco6 -path=../RepDisco6/Disco6_2.jpg -name=DISK
+rep -id=061Disco6 -path=../RepDisco6/Disco6_1.jpg -name=disk
+fdisk -path="../Disks/Disco6.dsk" -unit=K -name=PartE2_4KB -size=4 -type=E -fit=WF
+rep -id=061Disco6 -path=../RepDisco6/Disco6_2.jpg -name=disk
 fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=PartP3_2KB -SIZE=2 -type=P
-rep -id=061Disco6 -path=../RepDisco6/Disco6_3.jpg -name=DISK
+rep -id=061Disco6 -path=../RepDisco6/Disco6_3.jpg -name=disk
 fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=PartL1_1KB -SIZE=1 -type=L
-rep -id=061Disco6 -path=../RepDisco6/Disco6_4.jpg -name=DISK
+rep -id=061Disco6 -path=../RepDisco6/Disco6_4.jpg -name=disk
 fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=PartL2_1KB -SIZE=1 -type=L
-rep -id=061Disco6 -path=../RepDisco6/Disco6_5.jpg -name=DISK
+fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL3_1KB -SIZE=512 -type=L
+fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL4_1KB -SIZE=512 -type=L
+fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL5_1KB -SIZE=512 -type=L
+fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL6_1KB -SIZE=512 -type=L
+rep -id=061Disco6 -path=../RepDisco6/Disco6_5.jpg -name=disk
+rep -id=061Disco6 -path=../RepDisco6/Disco6_6.jpg -name=mbr

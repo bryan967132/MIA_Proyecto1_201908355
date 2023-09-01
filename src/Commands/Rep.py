@@ -47,11 +47,7 @@ class Rep:
             with open(absolutePath, 'rb') as file:
                 readed_bytes = file.read(127)
                 mbr = MBR.decode(readed_bytes)
-                colors = [
-                    ["#FFFFFF", "#FFFFFF"],
-                    ["#E8DAEF", "#F5B7B1"]
-                ]
-                dot = 'digraph Disk{\n\tnode [shape=plaintext];'
+                dot = 'digraph MBR{\n\tnode [shape=plaintext];'
                 dot += '\n\ttabla[label=<\n\t\t<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">'
                 dot += '\n\t\t\t<TR>\n\t\t\t\t<TD BORDER="1">\n\t\t\t\t\t<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">'
                 dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#4A235A"><FONT COLOR="white">{self.params["id"][3:]}</FONT></TD>\n\t\t\t\t\t\t</TR>'
@@ -119,13 +115,13 @@ class Rep:
                             extendedParts = '\n\t\t\t<TR>'
                             file.seek(mbr.partitions[i].start)
                             ebr = EBR.decode(file.read(30))
-                            lastNoEmptyByteExt = mbr.partitions[i].start + 30
+                            lastNoEmptyByteExt = mbr.partitions[i].start
                             occupiedExtend = 0
                             if ebr.status:
                                 while True:
                                     extendedParts += '\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="5">EBR</TD>'
                                     space = round((ebr.size / mbr.size) * 200, 2)
-                                    extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">{mbr.partitions[i].name.strip()}<BR/>Logica<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
+                                    extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">{ebr.name.strip()}<BR/>Logica<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
                                     lastNoEmptyByteExt = ebr.start + ebr.size - 1
                                     occupiedExtend += 10 + int(space)
                                     if ebr.next == -1:
@@ -135,7 +131,7 @@ class Rep:
                             else:
                                 occupiedExtend += 10
                                 extendedParts += '\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="5">EBR</TD>'
-                            if lastNoEmptyByteExt < mbr.partitions[i].start + mbr.partitions[i].size:
+                            if mbr.partitions[i].start + mbr.partitions[i].size - lastNoEmptyByteExt > 2:
                                 space = round(((mbr.partitions[i].start + mbr.partitions[i].size - (lastNoEmptyByteExt + 1)) / mbr.size) * 200, 2)
                                 extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">Libre<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
                                 occupiedExtend += int(space)
@@ -143,7 +139,7 @@ class Rep:
                             occupiedCells += occupiedExtend
                             dotParts += f'\n\t\t\t\t<TD COLSPAN="{occupiedExtend}" ROWSPAN="1">{mbr.partitions[i].name.strip()}<BR/>Extendida</TD>'
                         lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
-                if lastNoEmptyByte < mbr.size:
+                if mbr.size - lastNoEmptyByte > 2:
                     space = round(((mbr.size - (lastNoEmptyByte + 1)) / mbr.size) * 200, 2)
                     dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">Libre<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
                     occupiedCells += int(space)
@@ -176,8 +172,9 @@ class Rep:
 
     def porcentaje(self, number : float) -> int or float:
         num = number - int(number)
-        if num > 0:
+        if round(num, 2) > 0:
             return number
+        
         return int(number)
 
     def printError(self, text):
