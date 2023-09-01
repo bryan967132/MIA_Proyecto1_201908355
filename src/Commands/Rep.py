@@ -13,6 +13,7 @@ class Rep:
             return
         self.params['path'] = self.params['path'].replace('"','')
         if self.params['name'].lower() == 'mbr':
+            self.__reportMBR()
             return
         if self.params['name'].lower() == 'disk':
             self.__reportDisk()
@@ -35,6 +36,60 @@ class Rep:
             return
         if self.params['name'].lower() == 'ls':
             return
+
+    def __reportMBR(self):
+        if self.params['id'][3:] in disks:
+            diskPath = disks[self.params['id'][3:]]
+            absolutePath = os.path.abspath(diskPath)
+            if not os.path.exists(absolutePath):
+                self.printError(' -> Error rep: No existe el disco para reportar.')
+                return
+            with open(absolutePath, 'rb') as file:
+                readed_bytes = file.read(127)
+                mbr = MBR.decode(readed_bytes)
+                colors = [
+                    ["#FFFFFF", "#FFFFFF"],
+                    ["#E8DAEF", "#F5B7B1"]
+                ]
+                dot = 'digraph Disk{\n\tnode [shape=plaintext];'
+                dot += '\n\ttabla[label=<\n\t\t<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">'
+                dot += '\n\t\t\t<TR>\n\t\t\t\t<TD BORDER="1">\n\t\t\t\t\t<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">'
+                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#4A235A"><FONT COLOR="white">{self.params["id"][3:]}</FONT></TD>\n\t\t\t\t\t\t</TR>'
+                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#4A235A"><FONT COLOR="white">MBR</FONT></TD>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#4A235A"></TD>\n\t\t\t\t\t\t</TR>'
+                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">mbr_tamano</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{mbr.size}</TD>\n\t\t\t\t\t\t</TR>'
+                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#E8DAEF">mbr_fecha_creacion</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#E8DAEF">{mbr.date}</TD>\n\t\t\t\t\t\t</TR>'
+                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">mbr_fecha_creacion</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{mbr.date}</TD>\n\t\t\t\t\t\t</TR>'
+                for i in range(len(mbr.partitions)):
+                    if mbr.partitions[i].status:
+                        dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#4A235A"><FONT COLOR="white">Particion</FONT></TD>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#4A235A"></TD>\n\t\t\t\t\t\t</TR>'
+                        dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_status</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{mbr.partitions[i].status}</TD>\n\t\t\t\t\t\t</TR>'
+                        dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#E8DAEF">part_type</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#E8DAEF">{mbr.partitions[i].type}</TD>\n\t\t\t\t\t\t</TR>'
+                        dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_fit</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{mbr.partitions[i].fit}</TD>\n\t\t\t\t\t\t</TR>'
+                        dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#E8DAEF">part_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#E8DAEF">{mbr.partitions[i].start}</TD>\n\t\t\t\t\t\t</TR>'
+                        dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_size</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{mbr.partitions[i].size}</TD>\n\t\t\t\t\t\t</TR>'
+                        dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#E8DAEF">part_name</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#E8DAEF">{mbr.partitions[i].name.strip()}</TD>\n\t\t\t\t\t\t</TR>'
+                        if mbr.partitions[i].type == 'E':
+                            file.seek(mbr.partitions[i].start)
+                            ebr = EBR.decode(file.read(30))
+                            while ebr.status:
+                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F08080"><FONT COLOR="white">Particion Logica</FONT></TD>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#F08080"></TD>\n\t\t\t\t\t\t</TR>'
+                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_status</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{ebr.status}</TD>\n\t\t\t\t\t\t</TR>'
+                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F5B7B1">part_next</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#F5B7B1">{ebr.next}</TD>\n\t\t\t\t\t\t</TR>'
+                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_fit</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{ebr.fit}</TD>\n\t\t\t\t\t\t</TR>'
+                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F5B7B1">part_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#F5B7B1">{ebr.start}</TD>\n\t\t\t\t\t\t</TR>'
+                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_size</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{ebr.size}</TD>\n\t\t\t\t\t\t</TR>'
+                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F5B7B1">part_name</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#F5B7B1">{ebr.name.strip()}</TD>\n\t\t\t\t\t\t</TR>'
+                                if ebr.next != -1:
+                                    file.seek(ebr.next)
+                                    ebr = EBR.decode(file.read(30))
+                                    continue
+                                break
+                dot += '\n\t\t\t\t\t</TABLE>\n\t\t\t\t</TD>\n\t\t\t</TR>'
+                dot += '\n\t\t</TABLE>\n\t>];'
+                dot += '\n}'
+                self.__generateFile(dot)
+        else:
+            self.printError(' -> Error rep: No existe el disco para reportarlo.')
 
     def __reportDisk(self):
         if self.params['id'][3:] in disks:
