@@ -1,31 +1,34 @@
-mkdisk -size=10 -unit=K -path="../Disks/Disco6.dsk" -fit=BF
+mkdisk -size=10 -unit=K -path=../Disks/Disco6.dsk -fit=BF
 fdisk -Path=../Disks/Disco6.dsk -Unit=K -name=PartP1_3KB -size=3 -type=P
 rep -id=551Disco6 -path=../RepDisco6/Disco6_1.jpg -name=disk
-fdisk -path="../Disks/Disco6.dsk" -unit=K -name=PartE2_4KB -size=4 -type=E -fit=BF
+fdisk -path=../Disks/Disco6.dsk -unit=K -name=PartE2_4KB -size=4 -type=E -fit=BF
 rep -id=551Disco6 -path=../RepDisco6/Disco6_2.jpg -name=disk
-fdisk -path="../Disks/Disco6.dsk" -unit=K -Name=PartP3_2KB -SIZE=2 -type=P
+fdisk -path=../Disks/Disco6.dsk -unit=K -Name=PartP3_2KB -SIZE=2 -type=P
 rep -id=551Disco6 -path=../RepDisco6/Disco6_3.jpg -name=disk
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL1_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL1_256B -SIZE=256 -type=L
 rep -id=551Disco6 -path=../RepDisco6/Disco6_4.jpg -name=disk
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL2_256B -SIZE=256 -type=L
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL3_256B -SIZE=256 -type=L
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL4_256B -SIZE=256 -type=L
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL5_256B -SIZE=256 -type=L
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL6_256B -SIZE=256 -type=L
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL7_256B -SIZE=256 -type=L
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL8_256B -SIZE=256 -type=L
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL9_256B -SIZE=256 -type=L
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL10_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL2_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL3_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL4_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL5_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL6_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL7_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL8_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL9_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL10_256B -SIZE=256 -type=L
 rep -id=551Disco6 -path=../RepDisco6/Disco6_5.jpg -name=disk
 rep -id=551Disco6 -path=../RepDisco6/Disco6_6.jpg -name=mbr
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartP4_897B -SIZE=897 -type=P
-fdisk -path="../Disks/Disco6.dsk" -delete=full -Name=PartL2_256B
-fdisk -path="../Disks/Disco6.dsk" -delete=full -Name=PartL3_256B
-fdisk -path="../Disks/Disco6.dsk" -delete=full -Name=PartL9_256B
-fdisk -path="../Disks/Disco6.dsk" -delete=full -Name=PartL6_256B
-fdisk -path="../Disks/Disco6.dsk" -delete=full -Name=PartL8_256B
-fdisk -path="../Disks/Disco6.dsk" -delete=full -Name=PartL4_256B
-fdisk -path="../Disks/Disco6.dsk" -delete=full -Name=PartL1_256B
-fdisk -path="../Disks/Disco6.dsk" -unit=B -Name=PartL11_256B -SIZE=256 -type=L
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartP4_897B -SIZE=897 -type=P
+fdisk -path=../Disks/Disco6.dsk -delete=full -Name=PartL2_256B
+fdisk -path=../Disks/Disco6.dsk -delete=full -Name=PartL3_256B
+fdisk -path=../Disks/Disco6.dsk -delete=full -Name=PartL9_256B
+fdisk -path=../Disks/Disco6.dsk -delete=full -Name=PartL6_256B
+fdisk -path=../Disks/Disco6.dsk -delete=full -Name=PartL8_256B
+fdisk -path=../Disks/Disco6.dsk -delete=full -Name=PartL4_256B
+fdisk -path=../Disks/Disco6.dsk -delete=full -Name=PartL1_256B
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL5_256B -add=-128
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL7_256B -add=512
+fdisk -path=../Disks/Disco6.dsk -unit=K -Name=PartL10_256B -add=1
+fdisk -path=../Disks/Disco6.dsk -unit=B -Name=PartL10_256B -add=512
 rep -id=551Disco6 -path=../RepDisco6/Disco6_7.jpg -name=disk
 rep -id=551Disco6 -path=../RepDisco6/Disco6_8.jpg -name=mbr
