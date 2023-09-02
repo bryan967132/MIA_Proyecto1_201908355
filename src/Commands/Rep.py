@@ -140,7 +140,7 @@ class Rep:
                             else:
                                 occupiedExtend += 10
                                 extendedParts += '\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="5">EBR</TD>'
-                            if mbr.partitions[i].start + mbr.partitions[i].size - lastNoEmptyByteExt > 2:
+                            if mbr.partitions[i].start + mbr.partitions[i].size - lastNoEmptyByteExt > 1:
                                 space = self.__calculateSpace(mbr.partitions[i].start + mbr.partitions[i].size, lastNoEmptyByteExt + 1, mbr.size)
                                 occupiedExtend += int(space)
                                 extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">Libre<BR/>{self.__percentage(mbr.partitions[i].start + mbr.partitions[i].size, lastNoEmptyByteExt + 1, mbr.size)} %</TD>'
@@ -148,7 +148,7 @@ class Rep:
                             occupiedCells += occupiedExtend
                             dotParts += f'\n\t\t\t\t<TD COLSPAN="{occupiedExtend}" ROWSPAN="1">{mbr.partitions[i].name.strip()}<BR/>Extendida</TD>'
                         lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
-                if mbr.size - lastNoEmptyByte > 2:
+                if mbr.size - lastNoEmptyByte > 1:
                     space = self.__calculateSpace(mbr.size, lastNoEmptyByte + 1, mbr.size)
                     dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">Libre<BR/>{self.__percentage(mbr.size, lastNoEmptyByte + 1, mbr.size)} %</TD>'
                     occupiedCells += int(space)
