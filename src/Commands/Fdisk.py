@@ -2,7 +2,7 @@ from Structures.ListEBR import ListEBR
 from Structures.MBR import *
 from Structures.EBR import *
 from io import BufferedRandom
-from typing import List, Tuple
+from typing import List
 import os
 
 class Fdisk:
@@ -38,20 +38,42 @@ class Fdisk:
             mbr = MBR.decode(readed_bytes)
             for i in range(len(mbr.partitions)):
                 if mbr.partitions[i].status and mbr.partitions[i].name.strip() == self.params['name']:
-                    if mbr.partitions[i].type == 'P':
-                        while True:
-                            confirm = input(f"\033[33m -> Eliminar partición {self.params['name']} de disco {os.path.basename(absolutePath).split('.')[0]} (y/n): \033[0m")
-                            if confirm.lower().strip() == 'y':
-                                break
-                            elif confirm.lower().strip() == 'n':
-                                return
-                        mbr.partitions.pop(i)
-                        mbr.partitions.append(Partition())
-                        with open(self.params['path'], 'r+b') as file:
-                            file.seek(0)
-                            file.write(mbr.encode())
-                        self.printSuccessDelete(f' -> fdisk: Partición eliminada exitosamente en {os.path.basename(absolutePath).split(".")[0]}.')
+                    listEBR = None
+                    if mbr.partitions[i].type == 'E':
+                        listEBR = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file).getIterable()
+                    while True:
+                        confirm = input(f"\033[33m -> Eliminar partición {self.params['name']} de disco {os.path.basename(absolutePath).split('.')[0]} (y/n): \033[0m")
+                        if confirm.lower().strip() == 'y':
+                            break
+                        elif confirm.lower().strip() == 'n':
+                            return
+                    mbr.partitions.pop(i)
+                    mbr.partitions.append(Partition())
+                    with open(self.params['path'], 'r+b') as file:
+                        file.seek(0)
+                        file.write(mbr.encode())
+                        if listEBR:
+                            for ebr in listEBR:
+                                file.seek(ebr.start if ebr.start else mbr.partitions[i].start)
+                                file.write(b'\x00' * 30)
+                    self.printSuccessDelete(f' -> fdisk: Partición eliminada exitosamente en {os.path.basename(absolutePath).split(".")[0]}.')
                     return
+            i = self.__getExtended(mbr.partitions)
+            if i != -1:
+                listEBR : ListEBR = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file)
+                iterEBR : list[EBR] = listEBR.getIterable()
+                for ebr in iterEBR:
+                    if ebr.name and ebr.name.strip() == self.params["name"]:
+                        delEBR = listEBR.delete(ebr.name)
+                        with open(self.params['path'], 'r+b') as file:
+                            file.seek(delEBR.start)
+                            file.write(b'\x00' * 30)
+                            iterEBR = listEBR.getIterable()
+                            for ebr in iterEBR:
+                                file.seek(ebr.start if ebr.start else mbr.partitions[i].start)
+                                file.write(ebr.encode())
+                        self.printSuccessDelete(f' -> fdisk: Partición eliminada exitosamente en {os.path.basename(absolutePath).split(".")[0]}.')
+                        return
             self.printError(f' -> Error fdisk: No existe la partición que se intentó eliminar en {os.path.basename(absolutePath).split(".")[0]}.')
 
     def __addSpacePartition(self):
@@ -196,9 +218,9 @@ class Fdisk:
                     listEBR : ListEBR = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file)
                     disponible = listEBR.searchEmptySpace(self.params['size'] * units)
                     if len(disponible) > 0:
-                        if mbr.fit == 'B':
+                        if mbr.partitions[i].fit == 'B':
                             disponible = self.__sortBestFit(disponible)
-                        elif mbr.fit == 'W':
+                        elif mbr.partitions[i].fit == 'W':
                             disponible = self.__sortWorstFit(disponible)
                         ebr = EBR(
                             status = '0',
@@ -210,7 +232,7 @@ class Fdisk:
                         listEBR.insert(ebr)
                         with open(self.params['path'], 'r+b') as file:
                             for e in listEBR.getIterable():
-                                file.seek(e.start)
+                                file.seek(e.start if e.start else mbr.partitions[i].start)
                                 file.write(e.encode())
                         self.printSuccessCreate(os.path.basename(absolutePath).split(".")[0], self.params["name"], self.params['type'], self.params["size"], self.params["unit"])
                         return
@@ -223,13 +245,10 @@ class Fdisk:
         file.seek(start)
         ebr = EBR.decode(file.read(30))
         listEBR.insert(ebr)
-        while ebr.status:
-            if ebr.next != -1:
-                file.seek(ebr.next)
-                ebr = EBR.decode(file.read(30))
-                listEBR.insert(ebr)
-                continue
-            break
+        while ebr.next != -1:
+            file.seek(ebr.next)
+            ebr = EBR.decode(file.read(30))
+            listEBR.insert(ebr)
         return listEBR
 
     def __getExtended(self, partitions : List[Partition]):
