@@ -1,3 +1,5 @@
+from Structures.ListEBR import ListEBR
+from io import BufferedRandom
 from Structures.MBR import *
 from Structures.EBR import *
 from Env.Env import *
@@ -9,7 +11,7 @@ class Rep:
 
     def exec(self):
         if not ('name' in self.params and 'path' in self.params and 'id' in self.params):
-            self.printError(' -> Error rep: Faltan parámetros obligatorios para generar el reporte.')
+            self.__printError(' -> Error rep: Faltan parámetros obligatorios para generar el reporte.')
             return
         self.params['path'] = self.params['path'].replace('"','')
         if self.params['name'].lower() == 'mbr':
@@ -42,7 +44,7 @@ class Rep:
             diskPath = disks[self.params['id'][3:]]
             absolutePath = os.path.abspath(diskPath)
             if not os.path.exists(absolutePath):
-                self.printError(' -> Error rep: No existe el disco para reportar.')
+                self.__printError(' -> Error rep: No existe el disco para reportar.')
                 return
             with open(absolutePath, 'rb') as file:
                 readed_bytes = file.read(127)
@@ -65,34 +67,29 @@ class Rep:
                         dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_size</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{mbr.partitions[i].size}</TD>\n\t\t\t\t\t\t</TR>'
                         dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#E8DAEF">part_name</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#E8DAEF">{mbr.partitions[i].name.strip()}</TD>\n\t\t\t\t\t\t</TR>'
                         if mbr.partitions[i].type == 'E':
-                            file.seek(mbr.partitions[i].start)
-                            ebr = EBR.decode(file.read(30))
-                            while ebr.status:
-                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F08080"><FONT COLOR="white">Particion Logica</FONT></TD>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#F08080"></TD>\n\t\t\t\t\t\t</TR>'
-                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_status</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{ebr.status}</TD>\n\t\t\t\t\t\t</TR>'
-                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F5B7B1">part_next</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#F5B7B1">{ebr.next}</TD>\n\t\t\t\t\t\t</TR>'
-                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_fit</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{ebr.fit}</TD>\n\t\t\t\t\t\t</TR>'
-                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F5B7B1">part_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#F5B7B1">{ebr.start}</TD>\n\t\t\t\t\t\t</TR>'
-                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_size</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{ebr.size}</TD>\n\t\t\t\t\t\t</TR>'
-                                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F5B7B1">part_name</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#F5B7B1">{ebr.name.strip()}</TD>\n\t\t\t\t\t\t</TR>'
-                                if ebr.next != -1:
-                                    file.seek(ebr.next)
-                                    ebr = EBR.decode(file.read(30))
-                                    continue
-                                break
+                            iterEBR : list[EBR] = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file).getIterable()
+                            for ebr in iterEBR:
+                                if ebr.status:
+                                    dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F08080"><FONT COLOR="white">Particion Logica</FONT></TD>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#F08080"></TD>\n\t\t\t\t\t\t</TR>'
+                                    dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_status</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{ebr.status}</TD>\n\t\t\t\t\t\t</TR>'
+                                    dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F5B7B1">part_next</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#F5B7B1">{ebr.next}</TD>\n\t\t\t\t\t\t</TR>'
+                                    dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_fit</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{ebr.fit}</TD>\n\t\t\t\t\t\t</TR>'
+                                    dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F5B7B1">part_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#F5B7B1">{ebr.start}</TD>\n\t\t\t\t\t\t</TR>'
+                                    dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">part_size</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{ebr.size}</TD>\n\t\t\t\t\t\t</TR>'
+                                    dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#F5B7B1">part_name</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#F5B7B1">{ebr.name.strip()}</TD>\n\t\t\t\t\t\t</TR>'
                 dot += '\n\t\t\t\t\t</TABLE>\n\t\t\t\t</TD>\n\t\t\t</TR>'
                 dot += '\n\t\t</TABLE>\n\t>];'
                 dot += '\n}'
                 self.__generateFile(dot)
         else:
-            self.printError(' -> Error rep: No existe el disco para reportarlo.')
+            self.__printError(' -> Error rep: No existe el disco para reportarlo.')
 
     def __reportDisk(self):
         if self.params['id'][3:] in disks:
             diskPath = disks[self.params['id'][3:]]
             absolutePath = os.path.abspath(diskPath)
             if not os.path.exists(absolutePath):
-                self.printError(' -> Error rep: No existe el disco para reportar.')
+                self.__printError(' -> Error rep: No existe el disco para reportar.')
                 return
             with open(absolutePath, 'rb') as file:
                 readed_bytes = file.read(127)
@@ -104,44 +101,56 @@ class Rep:
                 for i in range(len(mbr.partitions)):
                     if mbr.partitions[i].status:
                         if mbr.partitions[i].start - lastNoEmptyByte > 1:
-                            space = round(((mbr.partitions[i].start - (lastNoEmptyByte + 1)) / mbr.size) * 200, 2)
+                            space = self.__calculateSpace(mbr.partitions[i].start, lastNoEmptyByte + 1, mbr.size)
                             occupiedCells += int(space)
-                            dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">Libre<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
-                        space = round((mbr.partitions[i].size / mbr.size) * 200, 2)
+                            dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">Libre<BR/>{self.__percentage(mbr.partitions[i].start, lastNoEmptyByte + 1, mbr.size)} %</TD>'
+                        space = self.__calculateSpace(mbr.partitions[i].size, 0, mbr.size)
                         if mbr.partitions[i].type == 'P':
                             occupiedCells += int(space)
-                            dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">{mbr.partitions[i].name.strip()}<BR/>Primaria<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
+                            dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">{mbr.partitions[i].name.strip()}<BR/>Primaria<BR/>{self.__percentage(mbr.partitions[i].size, 0, mbr.size)} %</TD>'
                         elif mbr.partitions[i].type == 'E':
                             extendedParts = '\n\t\t\t<TR>'
-                            file.seek(mbr.partitions[i].start)
-                            ebr = EBR.decode(file.read(30))
-                            lastNoEmptyByteExt = mbr.partitions[i].start
+                            lastNoEmptyByteExt = mbr.partitions[i].start - 1
                             occupiedExtend = 0
-                            if ebr.status:
-                                while True:
+                            iterEBR : list[EBR] = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file).getIterable()
+                            if iterEBR[0].status:
+                                for ebr in iterEBR:
+                                    if ebr.start - lastNoEmptyByteExt > 1:
+                                        space = self.__calculateSpace(ebr.start, lastNoEmptyByteExt + 1, mbr.size)
+                                        occupiedExtend += int(space)
+                                        extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">Libre<BR/>{self.__percentage(ebr.start, lastNoEmptyByteExt + 1, mbr.size)} %</TD>'
                                     extendedParts += '\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="5">EBR</TD>'
-                                    space = round((ebr.size / mbr.size) * 200, 2)
-                                    extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">{ebr.name.strip()}<BR/>Logica<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
+                                    space = self.__calculateSpace(ebr.size, 0, mbr.size)
+                                    extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">{ebr.name.strip()}<BR/>Logica<BR/>{self.__percentage(ebr.size, 0, mbr.size)} %</TD>'
                                     lastNoEmptyByteExt = ebr.start + ebr.size - 1
                                     occupiedExtend += 10 + int(space)
-                                    if ebr.next == -1:
-                                        break
-                                    file.seek(ebr.next)
-                                    ebr = EBR.decode(file.read(30))
+                            elif iterEBR[0].next != -1:
+                                occupiedExtend += 10
+                                extendedParts += '\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="5">EBR</TD>'
+                                for e in range(1, len(iterEBR)):
+                                    if iterEBR[e].start - lastNoEmptyByteExt > 1:
+                                        space = self.__calculateSpace(iterEBR[e].start, lastNoEmptyByteExt + 1, mbr.size)
+                                        occupiedExtend += int(space)
+                                        extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">Libre<BR/>{self.__percentage(iterEBR[e].start, lastNoEmptyByteExt + 1, mbr.size)} %</TD>'
+                                    extendedParts += '\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="5">EBR</TD>'
+                                    space = self.__calculateSpace(iterEBR[e].size, 0, mbr.size)
+                                    extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">{iterEBR[e].name.strip()}<BR/>Logica<BR/>{self.__percentage(iterEBR[e].size, 0, mbr.size)} %</TD>'
+                                    lastNoEmptyByteExt = iterEBR[e].start + iterEBR[e].size - 1
+                                    occupiedExtend += 10 + int(space)
                             else:
                                 occupiedExtend += 10
                                 extendedParts += '\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="5">EBR</TD>'
                             if mbr.partitions[i].start + mbr.partitions[i].size - lastNoEmptyByteExt > 2:
-                                space = round(((mbr.partitions[i].start + mbr.partitions[i].size - (lastNoEmptyByteExt + 1)) / mbr.size) * 200, 2)
-                                extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">Libre<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
+                                space = self.__calculateSpace(mbr.partitions[i].start + mbr.partitions[i].size, lastNoEmptyByteExt + 1, mbr.size)
                                 occupiedExtend += int(space)
+                                extendedParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="5">Libre<BR/>{self.__percentage(mbr.partitions[i].start + mbr.partitions[i].size, lastNoEmptyByteExt + 1, mbr.size)} %</TD>'
                             extendedParts += '\n\t\t\t</TR>'
                             occupiedCells += occupiedExtend
                             dotParts += f'\n\t\t\t\t<TD COLSPAN="{occupiedExtend}" ROWSPAN="1">{mbr.partitions[i].name.strip()}<BR/>Extendida</TD>'
                         lastNoEmptyByte = mbr.partitions[i].start + mbr.partitions[i].size - 1
                 if mbr.size - lastNoEmptyByte > 2:
-                    space = round(((mbr.size - (lastNoEmptyByte + 1)) / mbr.size) * 200, 2)
-                    dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">Libre<BR/>{self.porcentaje(round(space / 2, 2))} %</TD>'
+                    space = self.__calculateSpace(mbr.size, lastNoEmptyByte + 1, mbr.size)
+                    dotParts += f'\n\t\t\t\t<TD COLSPAN="{int(space)}" ROWSPAN="6">Libre<BR/>{self.__percentage(mbr.size, lastNoEmptyByte + 1, mbr.size)} %</TD>'
                     occupiedCells += int(space)
 
                 dot = 'digraph Disk{\n\tnode [shape=plaintext];'
@@ -155,7 +164,18 @@ class Rep:
                 dot += '\n}'
                 self.__generateFile(dot)
         else:
-            self.printError(' -> Error rep: No existe el disco para reportarlo.')
+            self.__printError(' -> Error rep: No existe el disco para reportarlo.')
+
+    def __getListEBR(self, start : int, size : int, file : BufferedRandom) -> ListEBR:
+        listEBR : ListEBR = ListEBR(start, size)
+        file.seek(start)
+        ebr = EBR.decode(file.read(30))
+        listEBR.insert(ebr)
+        while ebr.next != -1:
+            file.seek(ebr.next)
+            ebr = EBR.decode(file.read(30))
+            listEBR.insert(ebr)
+        return listEBR
 
     def __generateFile(self, dot):
         absolutePath = os.path.abspath(self.params['path'])
@@ -168,19 +188,25 @@ class Rep:
             file.write(dot)
         os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
         # os.remove(absolutePath.replace(extension, "dot"))
-        self.printSuccess(self.params['name'].lower(), self.params['id'][3:])
+        self.__printSuccess(self.params['name'].lower(), self.params['id'][3:])
 
-    def porcentaje(self, number : float) -> int or float:
+    def __percentage(self, start, firstEmptyByte, size) -> int or float:
+        number = round(((start - firstEmptyByte) / size) * 100, 2)
         num = number - int(number)
         if round(num, 2) > 0:
             return number
-        
         return int(number)
 
-    def printError(self, text):
+    def __calculateSpace(self, start, firstEmptyByte, size):
+        num = round(((start - firstEmptyByte) / size) * 200, 2)
+        if num >= 1:
+            return num
+        return 1
+
+    def __printError(self, text):
         print(f"\033[{31}m{text}\033[0m")
 
-    def printSuccess(self, type, diskname):
+    def __printSuccess(self, type, diskname):
         print(f"\033[{35}m -> rep: Reporte generado exitosamente. '{type}' {diskname}\033[0m")
 
     def __str__(self) -> str:
