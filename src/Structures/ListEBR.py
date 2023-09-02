@@ -1,5 +1,4 @@
 from Structures.EBR import *
-from typing import Tuple
 
 class Node:
     def __init__(self, ebr : EBR):
@@ -13,19 +12,30 @@ class Node:
 class ListEBR:
     def __init__(self, startPartition : int, size : int):
         self.startPartition : int = startPartition
+        self.lastStart : int = 1024
         self.size : int = size
-        self.first : Node = Node(EBR())
-        self.last : Node = self.first
+        self.first : Node = None
+        self.last : Node = None
 
     def insert(self, newEBR : EBR):
-        if self.first.ebr.status:
-            if newEBR.start > self.last.ebr.start:
+        if self.first:
+            if not self.first.ebr.status and newEBR.start == self.startPartition:
+                newNode = Node(newEBR)
+                if self.first.next:
+                    newEBR.next = self.first.next.ebr.start
+                    self.first.next.prev = newNode
+                    newNode.next = self.first.next
+                self.first = newNode
+                self.lastStart = newEBR.start
+                return
+            if newEBR.start > self.lastStart:
                 self.last.next = Node(newEBR)
                 self.last.ebr.next = self.last.next.ebr.start
                 self.last.next.prev = self.last
                 self.last = self.last.next
+                self.lastStart = newEBR.start
                 return
-            current : Node = self.first
+            current : Node = self.first.next
             newNode : Node = Node(newEBR)
             while current:
                 if newEBR.start > current.ebr.start and newEBR.start < current.next.ebr.start:
@@ -35,23 +45,21 @@ class ListEBR:
                     newNode.next = current.next
                     current.next.prev = newNode
                     current.next = newNode
+                    self.lastStart = newEBR.start
                     return
                 current = current.next
             return
-        newNode = Node(newEBR)
-        if self.first.next:
-            newNode.next = self.first.next
-            newNode.ebr.next = self.first.next.ebr.start
-        self.first = newNode
+        self.first = Node(newEBR)
         self.last = self.first
 
-    def delete(self, name : str) -> int :
+    def delete(self, name : str) -> EBR:
         if self.first.ebr.name == name:
+            deleted = self.first.ebr
             newFirst = Node(EBR(next = self.first.ebr.next))
             newFirst.next = self.first.next
             self.first = newFirst
-            return newFirst.ebr.start
-        current = self.first.next
+            return deleted
+        current = self.first
         while current.next:
             if current.next.ebr.name == name:
                 deleted = current.next.ebr
@@ -60,9 +68,9 @@ class ListEBR:
                     current.next = current.next.next
                 if current.next.next:
                     current.next.next.prev = current
-                return deleted.start
+                return deleted
             current = current.next
-        return -1
+        return None
 
     def searchEmptySpace(self, newSize : int) -> list:
         emptySpaces = []
