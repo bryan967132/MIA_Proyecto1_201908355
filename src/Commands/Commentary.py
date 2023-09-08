@@ -3,4 +3,4 @@ class Commentary:
         self.txt = txt
 
     def exec(self):
-        print(self.txt)
+        print(' ->',self.txt)
