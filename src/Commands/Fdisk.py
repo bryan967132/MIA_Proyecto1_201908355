@@ -10,7 +10,7 @@ class Fdisk:
         self.line = line
         self.column = column
 
-    def setParams(self, params : dict):
+    def setParams(self, params: dict):
         self.params = params
 
     def exec(self):
@@ -37,7 +37,7 @@ class Fdisk:
         if not os.path.exists(absolutePath):
             self.__printError(f' -> Error fdisk: No existe {os.path.basename(absolutePath).split(".")[0]} para eliminar la partición.')
             return
-        with open(self.params['path'], 'rb') as file:
+        with open(absolutePath, 'rb') as file:
             readed_bytes = file.read(127)
             mbr = MBR.decode(readed_bytes)
             for i in range(len(mbr.partitions)):
@@ -53,7 +53,7 @@ class Fdisk:
                             return
                     mbr.partitions.pop(i)
                     mbr.partitions.append(Partition())
-                    with open(self.params['path'], 'r+b') as file:
+                    with open(absolutePath, 'r+b') as file:
                         file.seek(0)
                         file.write(mbr.encode())
                         if listEBR:
@@ -64,8 +64,8 @@ class Fdisk:
                     return
             i = self.__getExtended(mbr.partitions)
             if i != -1:
-                listEBR : ListEBR = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file)
-                iterEBR : list[EBR] = listEBR.getIterable()
+                listEBR: ListEBR = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file)
+                iterEBR: list[EBR] = listEBR.getIterable()
                 for ebr in iterEBR:
                     if ebr.name and ebr.name.strip() == self.params["name"]:
                         while True:
@@ -75,7 +75,7 @@ class Fdisk:
                             elif confirm.lower().strip() == 'n':
                                 return
                         delEBR = listEBR.delete(ebr.name)
-                        with open(self.params['path'], 'r+b') as file:
+                        with open(absolutePath, 'r+b') as file:
                             file.seek(delEBR.start)
                             file.write(b'\x00' * 30)
                             iterEBR = listEBR.getIterable()
@@ -102,7 +102,7 @@ class Fdisk:
         else:
             self.__printError(' -> Error fdisk: Unidad de Bytes Incorrecta.')
             return
-        with open(self.params['path'], 'rb') as file:
+        with open(absolutePath, 'rb') as file:
             readed_bytes = file.read(127)
             mbr = MBR.decode(readed_bytes)
             for i in range(len(mbr.partitions)):
@@ -130,14 +130,14 @@ class Fdisk:
                         msg = "aumentado"
                         sign = "+"
                     mbr.partitions[i].size += bytesAdds
-                    with open(self.params['path'], 'r+b') as file:
+                    with open(absolutePath, 'r+b') as file:
                         file.seek(0)
                         file.write(mbr.encode())
-                    self.__printSuccessAdd(f' -> fdisk: Espacio {msg} en la Partición exitosamente en {os.path.basename(absolutePath).split(".")[0]}.', mbr.partitions[i].name.strip(), sign, self.params['add'], self.params['unit'], mbr.partitions[i].type)
+                    self.__printSuccessAdd(f' -> fdisk: Espacio {msg} en la Partición exitosamente en {os.path.basename(absolutePath).split(".")[0]}.', mbr.partitions[i].name.strip(), sign, abs(self.params['add']), self.params['unit'], mbr.partitions[i].type)
                     return
             i = self.__getExtended(mbr.partitions)
             if i != -1:
-                listEBR : list[EBR] = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file).getIterable()
+                listEBR: list[EBR] = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file).getIterable()
                 for ebr in listEBR:
                     if ebr.name and ebr.name.strip() == self.params['name']:
                         bytesAdds = self.params['add'] * units
@@ -164,10 +164,10 @@ class Fdisk:
                             msg = "aumentado"
                             sign = "+"
                         ebr.size += bytesAdds
-                        with open(self.params['path'], 'r+b') as file:
+                        with open(absolutePath, 'r+b') as file:
                             file.seek(ebr.start)
                             file.write(ebr.encode())
-                        self.__printSuccessAdd(f' -> fdisk: Espacio {msg} en la Partición exitosamente en {os.path.basename(absolutePath).split(".")[0]}.', ebr.name.strip(), sign, self.params['add'], self.params['unit'], 'L')
+                        self.__printSuccessAdd(f' -> fdisk: Espacio {msg} en la Partición exitosamente en {os.path.basename(absolutePath).split(".")[0]}.', ebr.name.strip(), sign, abs(self.params['add']), self.params['unit'], 'L')
                         return
             self.__printError(f' -> Error fdisk: No existe la partición en {os.path.basename(absolutePath).split(".")[0]} a la que se intentó agregar o quitar espacio.')
 
@@ -193,9 +193,12 @@ class Fdisk:
         else:
             self.__printError(' -> Error fdisk: Unidad de Bytes Incorrecta.')
             return
-        with open(self.params['path'], 'rb') as file:
+        with open(absolutePath, 'rb') as file:
             readed_bytes = file.read(127)
             mbr = MBR.decode(readed_bytes)
+            if self.__thereAreFour(mbr.partitions):
+                self.__printError(f' -> Error fdisk: Ya existen 4 particiones en el disco {os.path.basename(absolutePath).split(".")[0]}.')
+                return
             self.params['fit'] = self.params['fit'][:1]
             if self.params['type'] == 'P' or self.params['type'] == 'E':
                 disponible = []
@@ -226,7 +229,7 @@ class Fdisk:
                                 self.params['name'][:16].ljust(16)
                             )
                             mbr.partitions = self.__sortOrder(mbr.partitions)
-                            with open(self.params['path'], 'r+b') as file:
+                            with open(absolutePath, 'r+b') as file:
                                 file.seek(0)
                                 file.write(mbr.encode())
                                 if self.params['type'] == 'E':
@@ -240,7 +243,7 @@ class Fdisk:
             elif self.params['type'] == 'L':
                 i = self.__getExtended(mbr.partitions)
                 if i != -1:
-                    listEBR : ListEBR = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file)
+                    listEBR: ListEBR = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file)
                     disponible = listEBR.searchEmptySpace(self.params['size'] * units)
                     if len(disponible) > 0:
                         if mbr.partitions[i].fit == 'B':
@@ -255,7 +258,7 @@ class Fdisk:
                             name = self.params['name'][:16].ljust(16)
                         )
                         listEBR.insert(ebr)
-                        with open(self.params['path'], 'r+b') as file:
+                        with open(absolutePath, 'r+b') as file:
                             for e in listEBR.getIterable():
                                 file.seek(e.start if e.start else mbr.partitions[i].start)
                                 file.write(e.encode())
@@ -265,8 +268,14 @@ class Fdisk:
                     return
                 self.__printError(f' -> Error fdisk: No existe una partición extendida en {os.path.basename(absolutePath).split(".")[0]} para crear la partición lógica.')
 
-    def __getListEBR(self, start : int, size : int, file : BufferedRandom) -> ListEBR:
-        listEBR : ListEBR = ListEBR(start, size)
+    def __thereAreFour(self, partitions: List[Partition]) -> bool:
+        for i in partitions:
+            if not i.status:
+                return False
+        return True
+
+    def __getListEBR(self, start: int, size: int, file: BufferedRandom) -> ListEBR:
+        listEBR: ListEBR = ListEBR(start, size)
         file.seek(start)
         ebr = EBR.decode(file.read(30))
         listEBR.insert(ebr)
@@ -276,7 +285,7 @@ class Fdisk:
             listEBR.insert(ebr)
         return listEBR
 
-    def __getExtended(self, partitions : List[Partition]):
+    def __getExtended(self, partitions: List[Partition]):
         for i in range(len(partitions)):
             if partitions[i].type == 'E':
                 return i
