@@ -2,7 +2,9 @@ from Env.Env import *
 import os
 
 class Rmdisk:
-    def __init__(self, path : str = None):
+    def __init__(self, line: int, column: int, path : str = None):
+        self.line = line
+        self.column = column
         self.path = path.replace('"', '')
 
     def exec(self):
@@ -24,7 +26,7 @@ class Rmdisk:
         self.printSuccess(f' -> rmdisk: Disco {os.path.basename(absolutePath).split(".")[0]} elminado exitosamente.')
 
     def printError(self, text):
-        print(f"\033[{31}m{text}\033[0m")
+        print(f"\033[{31}m{text} [{self.line}:{self.column}]\033[0m")
 
     def printSuccess(self, text):
-        print(f"\033[96m{text}\033[0m")
+        print(f"\033[96m{text} [{self.line}:{self.column}]\033[0m")

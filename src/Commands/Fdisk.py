@@ -6,6 +6,10 @@ from typing import List
 import os
 
 class Fdisk:
+    def __init__(self, line: int, column: int):
+        self.line = line
+        self.column = column
+
     def setParams(self, params : dict):
         self.params = params
 
@@ -323,18 +327,18 @@ class Fdisk:
         return False
 
     def __printError(self, text):
-        print(f"\033[31m{text}\033[0m")
+        print(f"\033[31m{text} [{self.line}:{self.column}]\033[0m")
 
     def __printSuccessDelete(self, text):
-        print(f"\033[32m{text}\033[0m")
+        print(f"\033[32m{text} [{self.line}:{self.column}]\033[0m")
 
     def __printSuccessAdd(self, text):
-        print(f"\033[32m{text}\033[0m")
+        print(f"\033[32m{text} [{self.line}:{self.column}]\033[0m")
 
     def __printSuccessCreate(self, diskname, name, type, size, unit):
         type = "Primaria" if type == 'P' else ("Extendida" if type == 'E' else "Logica")
         unit = unit if unit in ['K', 'M'] else ""
-        print("\033[32m -> fdisk: Partición creada exitosamente en {}. {:<9} ({}: {} {}B)\033[0m".format(diskname, type.upper(), name, size, unit))
+        print("\033[32m -> fdisk: Partición creada exitosamente en {}. {:<9} ({}: {} {}B) [{}:{}]\033[0m".format(diskname, type.upper(), name, size, unit, self.line, self.column))
 
     def __str__(self) -> str:
         return 'Fdisk'    

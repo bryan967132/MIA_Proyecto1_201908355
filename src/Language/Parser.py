@@ -41,11 +41,11 @@ def p_MKDISK(t):
     '''MKDISK   : RW_mkdisk MKDISKPARAMS
                 | RW_mkdisk'''
     if len(t) != 2:
-        t[0] = Mkdisk()
+        t[0] = Mkdisk(t.lineno(1), t.lexpos(1))
         t[0].setParams(t[2])
         t[0].exec()
     else:
-        t[0] = Mkdisk()
+        t[0] = Mkdisk(t.lineno(1), t.lexpos(1))
         t[0].setParams({})
         t[0].exec()
 
@@ -69,21 +69,21 @@ def p_RMDISK(t):
     '''RMDISK   : RW_rmdisk RW_path TK_equ TK_path
                 | RW_rmdisk'''
     if len(t) != 2:
-        t[0] = Rmdisk(t[4])
+        t[0] = Rmdisk(t.lineno(1), t.lexpos(1), t[4])
         t[0].exec()
     else:
-        t[0] = Rmdisk()
+        t[0] = Rmdisk(t.lineno(1), t.lexpos(1), )
         t[0].exec()
 
 def p_FDISK(t):
     '''FDISK    : RW_fdisk FDISKPARAMS
                 | RW_fdisk'''
     if len(t) != 2:
-        t[0] = Fdisk()
+        t[0] = Fdisk(t.lineno(1), t.lexpos(1))
         t[0].setParams(t[2])
         t[0].exec()
     else:
-        t[0] = Fdisk()
+        t[0] = Fdisk(t.lineno(1), t.lexpos(1))
         t[0].setParams({})
         t[0].exec()
 
@@ -111,11 +111,11 @@ def p_REP(t):
     '''REP  : RW_rep REPPARAMS
             | RW_rep'''
     if len(t) != 2:
-        t[0] = Rep()
+        t[0] = Rep(t.lineno(1), t.lexpos(1))
         t[0].setParams(t[2])
         t[0].exec()
     else:
-        t[0] = Rep()
+        t[0] = Rep(t.lineno(1), t.lexpos(1))
         t[0].setParams({})
         t[0].exec()
 

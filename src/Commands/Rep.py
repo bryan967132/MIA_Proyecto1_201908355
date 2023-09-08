@@ -6,6 +6,10 @@ from Env.Env import *
 import os
 
 class Rep:
+    def __init__(self, line: int, column: int):
+        self.line = line
+        self.column = column
+
     def setParams(self, params : dict):
         self.params = params
 
@@ -204,10 +208,10 @@ class Rep:
         return 1
 
     def __printError(self, text):
-        print(f"\033[{31}m{text}\033[0m")
+        print(f"\033[{31}m{text} [{self.line}:{self.column}]\033[0m")
 
     def __printSuccess(self, type, diskname):
-        print(f"\033[{35}m -> rep: Reporte generado exitosamente. '{type}' {diskname}\033[0m")
+        print(f"\033[{35}m -> rep: Reporte generado exitosamente. '{type}' {diskname} [{self.line}:{self.column}]\033[0m")
 
     def __str__(self) -> str:
         return 'Rep'

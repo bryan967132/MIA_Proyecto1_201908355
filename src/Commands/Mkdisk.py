@@ -3,7 +3,11 @@ from Env.Env import *
 import os
 
 class Mkdisk:
-    def setParams(self, params : dict):
+    def __init__(self, line: int, column: int):
+        self.line = line
+        self.column = column
+
+    def setParams(self, params: dict):
         self.params = params
 
     def exec(self):
@@ -47,10 +51,10 @@ class Mkdisk:
         return False
 
     def printError(self, text):
-        print(f"\033[{31}m{text}\033[0m")
+        print(f"\033[{31}m{text} [{self.line}:{self.column}]\033[0m")
 
     def printSuccess(self, text):
-        print(f"\033[96m{text}\033[0m")
+        print(f"\033[96m{text} [{self.line}:{self.column}]\033[0m")
 
     def __str__(self) -> str:
         return 'Mkdisk'
