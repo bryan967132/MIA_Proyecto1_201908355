@@ -154,23 +154,8 @@ def p_COMMENTARY(t):
     t[0] = Commentary(t[1])
     t[0].exec()
 
-class Sym:
-    def __init__(self, type, lexeme, line, pos):
-        self.type = type
-        self.lexeme = lexeme
-        self.line = line
-        self.pos = pos
-
-    def getSym(tok):
-        attribsTok = str(tok)
-        for s in ['LexToken', '(', ')', '\'',]:
-            attribsTok = attribsTok.replace(s, '')
-        attribsTok = attribsTok.split(',')
-        return Sym(attribsTok[0], attribsTok[1], attribsTok[2], attribsTok[3])
-
 def p_error(t):
-    t = Sym.getSym(t)
-    print(f"Error de sintaxis: {t.type} = {t.lexeme}, línea {t.line}")
+    print(f"\033[31m -> Error de Sintaxis: {t.type} = {t.value}. [{t.lineno}:{t.lexpos}]\033[0m")
 
 from Language.Scanner import *
 import ply.yacc as Parser
