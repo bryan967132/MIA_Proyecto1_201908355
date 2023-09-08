@@ -68,6 +68,12 @@ class Fdisk:
                 iterEBR : list[EBR] = listEBR.getIterable()
                 for ebr in iterEBR:
                     if ebr.name and ebr.name.strip() == self.params["name"]:
+                        while True:
+                            confirm = input(f"\033[33m -> Eliminar partición {self.params['name']} de disco {os.path.basename(absolutePath).split('.')[0]} (y/n): \033[0m")
+                            if confirm.lower().strip() == 'y':
+                                break
+                            elif confirm.lower().strip() == 'n':
+                                return
                         delEBR = listEBR.delete(ebr.name)
                         with open(self.params['path'], 'r+b') as file:
                             file.seek(delEBR.start)
@@ -102,6 +108,7 @@ class Fdisk:
             for i in range(len(mbr.partitions)):
                 if mbr.partitions[i].status and mbr.partitions[i].name.strip() == self.params['name']:
                     bytesAdds = self.params['add'] * units
+                    msg = "sin cambios"
                     if bytesAdds < 0:
                         if abs(bytesAdds) == mbr.partitions[i].size:
                             self.__printError(' ->  Error fdisk: Intenta quitar todo el espacio del disponible en la partición.')
@@ -109,20 +116,21 @@ class Fdisk:
                         if abs(bytesAdds) > mbr.partitions[i].size:
                             self.__printError(' ->  Error fdisk: Intenta quitar más espacio del disponible en la partición.')
                             return
+                        msg = "reducido"
                     elif bytesAdds > 0:
                         if i < len(mbr.partitions) - 1 and mbr.partitions[i + 1].status:
                             if bytesAdds > mbr.partitions[i + 1].start - mbr.partitions[i].size - mbr.partitions[i].start:
                                 self.__printError(' -> Error fdisk: Intenta agregar más espacio del disponible después de la partición.')
                                 return
-                        else:
-                            if bytesAdds > mbr.size - mbr.partitions[i].size - mbr.partitions[i].start:
+                        elif bytesAdds > mbr.size - mbr.partitions[i].size - mbr.partitions[i].start:
                                 self.__printError(' -> Error fdisk: Intenta agregar más espacio del disponible después de la partición.')
                                 return
+                        msg = "aumentado"
                     mbr.partitions[i].size += bytesAdds
                     with open(self.params['path'], 'r+b') as file:
                         file.seek(0)
                         file.write(mbr.encode())
-                    self.__printSuccessAdd(f' -> fdisk: Espacio reducido en la Partición exitosamente en {os.path.basename(absolutePath).split(".")[0]}.')
+                    self.__printSuccessAdd(f' -> fdisk: Espacio {msg} en la Partición exitosamente en {os.path.basename(absolutePath).split(".")[0]}.')
                     return
             i = self.__getExtended(mbr.partitions)
             if i != -1:
@@ -130,6 +138,7 @@ class Fdisk:
                 for ebr in listEBR:
                     if ebr.name and ebr.name.strip() == self.params['name']:
                         bytesAdds = self.params['add'] * units
+                        msg = "sin cambios"
                         if bytesAdds < 0:
                             if abs(bytesAdds) == ebr.size:
                                 self.__printError(' ->  Error fdisk: Intenta quitar todo el espacio del disponible en la partición.')
@@ -137,6 +146,7 @@ class Fdisk:
                             if abs(bytesAdds) > ebr.size:
                                 self.__printError(' ->  Error fdisk: Intenta quitar más espacio del disponible en la partición.')
                                 return
+                            msg = "reducido"
                         elif bytesAdds > 0:
                             if ebr.next != -1:
                                 if bytesAdds > ebr.next - ebr.size - ebr.start:
@@ -146,11 +156,12 @@ class Fdisk:
                                 if bytesAdds > mbr.partitions[i].start + mbr.partitions[i].size - ebr.size - ebr.start:
                                     self.__printError(' -> Error fdisk: Intenta agregar más espacio del disponible después de la partición.')
                                     return
+                            msg = "aumentado"
                         ebr.size += bytesAdds
                         with open(self.params['path'], 'r+b') as file:
                             file.seek(ebr.start)
                             file.write(ebr.encode())
-                        self.__printSuccessAdd(f' -> fdisk: Espacio reducido en la Partición exitosamente en {os.path.basename(absolutePath).split(".")[0]}.')
+                        self.__printSuccessAdd(f' -> fdisk: Espacio {msg} en la Partición exitosamente en {os.path.basename(absolutePath).split(".")[0]}.')
                         return
             self.__printError(f' -> Error fdisk: No existe la partición en {os.path.basename(absolutePath).split(".")[0]} a la que se intentó agregar o quitar espacio.')
 
