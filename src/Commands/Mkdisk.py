@@ -32,7 +32,7 @@ class Mkdisk:
                 os.makedirs(directory)
             self.params['fit'] = self.params['fit'][:1]
             mbr = MBR(size = self.params['size'] * units, fit = self.params['fit'])
-            disks[os.path.basename(self.params['path']).split('.')[0]] = {'path': os.path.abspath(self.params['path']), 'ids': {}}
+            disks[os.path.basename(self.params['path']).split('.')[0]] = {'path': os.path.abspath(self.params['path']), 'ids': {}, 'nextId': 1}
             with open(self.params['path'], 'wb') as file:
                 byte = b'\x00'
                 for i in range(self.params['size']):
