@@ -45,7 +45,7 @@ class Rep:
 
     def __reportMBR(self):
         if self.params['id'][3:] in disks:
-            diskPath = disks[self.params['id'][3:]]
+            diskPath = disks[self.params['id'][3:]]['path']
             absolutePath = os.path.abspath(diskPath)
             if not os.path.exists(absolutePath):
                 self.__printError(' -> Error rep: No existe el disco para reportar.')
@@ -90,7 +90,7 @@ class Rep:
 
     def __reportDisk(self):
         if self.params['id'][3:] in disks:
-            diskPath = disks[self.params['id'][3:]]
+            diskPath = disks[self.params['id'][3:]]['path']
             absolutePath = os.path.abspath(diskPath)
             if not os.path.exists(absolutePath):
                 self.__printError(' -> Error rep: No existe el disco para reportar.')
