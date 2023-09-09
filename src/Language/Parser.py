@@ -3,6 +3,8 @@ from Commands.Execute import Execute
 from Commands.Mkdisk import Mkdisk
 from Commands.Rmdisk import Rmdisk
 from Commands.Fdisk import Fdisk
+from Commands.Mount import Mount
+from Commands.Unmount import Unmount
 from Commands.Rep import Rep
 
 precedence = ()
@@ -25,6 +27,8 @@ def p_COMMAND(t):
                 | MKDISK
                 | RMDISK
                 | FDISK
+                | MOUNT
+                | UNMOUNT
                 | REP
                 | COMMENTARY'''
     t[0] = t[1]
@@ -106,6 +110,44 @@ def p_FDISKPARAM(t):
                     | RW_delete TK_equ RW_full
                     | RW_add    TK_equ TK_number'''
     t[0] = [t[1][1:].lower(), t[3]]
+
+def p_MOUNT(t):
+    '''MOUNT    : RW_mount MOUNTPARAMS
+                | RW_mount'''
+    if len(t) != 2:
+        t[0] = Mount(t.lineno(1), t.lexpos(1))
+        t[0].setParams(t[2])
+        t[0].exec()
+    else:
+        t[0] = Mount(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
+
+def p_MOUNTPARAMS(t):
+    '''MOUNTPARAMS  : MOUNTPARAMS MOUNTPARAM
+                    | MOUNTPARAM'''
+    if len(t) != 2:
+        t[1][t[2][0]] = t[2][1]
+        t[0] = t[1]
+    else:
+        t[0] = {t[1][0]: t[1][1]}
+
+def p_MOUNTPARAM(t):
+    '''MOUNTPARAM   : RW_path TK_equ TK_path
+                    | RW_name TK_equ TK_id'''
+    t[0] = [t[1][1:].lower(), t[3]]
+
+def p_UNMOUNT(t):
+    '''UNMOUNT  : RW_unmount RW_id TK_equ TK_id
+                | RW_unmount'''
+    if len(t) != 2:
+        t[0] = Unmount(t.lineno(1), t.lexpos(1))
+        t[0].setParams({t[2][1:].lower(): t[4]})
+        t[0].exec()
+    else:
+        t[0] = Unmount(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
 
 def p_REP(t):
     '''REP  : RW_rep REPPARAMS
