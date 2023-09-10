@@ -1,4 +1,5 @@
 from Structures.EBR import *
+from typing import List
 
 class Node:
     def __init__(self, ebr : EBR):
@@ -93,7 +94,7 @@ class ListEBR:
             print(current.ebr)
             current = current.next
 
-    def getIterable(self) -> list[EBR]:
+    def getIterable(self) -> List[EBR]:
         ebrs = []
         current = self.first
         while current:

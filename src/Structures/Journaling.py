@@ -1,3 +1,4 @@
+from typing import List
 import datetime
 
 class Record:
@@ -22,7 +23,7 @@ class Record:
         return Record(type, name, content, date)
 
 class Journaling:
-    def __init__(self, records: list[Record] = [Record() for i in range(16)]):
+    def __init__(self, records: List[Record] = [Record() for i in range(16)]):
         self.records: list[Record] = records # Capacidad Para
 
     def encode(self):

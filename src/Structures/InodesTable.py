@@ -1,4 +1,5 @@
 import datetime
+from typing import List
 
 class InodesTable:
     def __init__(self,
@@ -8,7 +9,7 @@ class InodesTable:
         atime: datetime = None,
         ctime: datetime = datetime.datetime.now(),
         mtime: datetime = None,
-        block: list[int] = [-1 for i in range(15)],
+        block: List[int] = [-1 for i in range(15)],
         type: str = '0',
         perm: int = 664
     ):

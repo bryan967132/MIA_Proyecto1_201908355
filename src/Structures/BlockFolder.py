@@ -1,7 +1,8 @@
 from Structures.Content import *
+from typing import List
 
 class BlockFolder:
-    def __init__(self, content: list[Content] = [Content() for i in range(4)]):
+    def __init__(self, content: List[Content] = [Content() for i in range(4)]):
         self.content: list[Content] = content
 
     def encode(self) -> bytes:

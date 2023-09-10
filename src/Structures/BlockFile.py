@@ -1,5 +1,7 @@
+from typing import List
+
 class BlockFile:
-    def __init__(self, content: list[str] = ['' for i in range(64)]):
+    def __init__(self, content: List[str] = ['' for i in range(64)]):
         self.content: list[str] = content
 
     def encode(self):

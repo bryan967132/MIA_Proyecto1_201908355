@@ -1,5 +1,7 @@
+from typing import List
+
 class BlockPointers:
-    def __init__(self, pointers: list[int] = [-1 for i in range(16)]):
+    def __init__(self, pointers: List[int] = [-1 for i in range(16)]):
         self.pointers: list[int] = pointers
 
     def encode(self):
