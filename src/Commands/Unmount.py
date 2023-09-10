@@ -39,7 +39,7 @@ class Unmount:
                                 file.write('0'.encode('utf-8'))
                             thisDisk = disks[os.path.basename(absolutePath).split('.')[0]]
                             del thisDisk['ids'][self.params['id']]
-                            self.__printSuccess(os.path.basename(absolutePath).split('.')[0], namePartition, mbr.partitions[i].type)
+                            self.__printSuccess(os.path.basename(absolutePath).split('.')[0], self.params['id'], namePartition, mbr.partitions[i].type)
                             return
                     i = self.__getExtended(mbr.partitions)
                     if i != -1:
@@ -51,13 +51,13 @@ class Unmount:
                                     file.write('0'.encode('utf-8'))
                                 thisDisk = disks[os.path.basename(absolutePath).split('.')[0]]
                                 del thisDisk['ids'][self.params['id']]
-                                self.__printSuccess(os.path.basename(absolutePath).split('.')[0], namePartition, 'L')
+                                self.__printSuccess(os.path.basename(absolutePath).split('.')[0], self.params['id'], namePartition, 'L')
                                 return
                     self.__printError(f' -> Error unmount: Intenta desmontar una partición inexistente en {match.group(2)}.')
                     return
             self.__printError(f' -> Error unmount: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')
             return
-        self.__printError(f' -> Error unmount: No existe el disco {self.params["id"][3:]} para desmontar la partición.')
+        self.__printError(f' -> Error unmount: No existe el disco {match.group(2)} para desmontar la partición.')
 
     def __getListEBR(self, start: int, size: int, file: BufferedRandom) -> ListEBR:
         listEBR: ListEBR = ListEBR(start, size)
@@ -84,6 +84,6 @@ class Unmount:
     def __printError(self, text):
         print(f"\033[31m{text} [{self.line}:{self.column}]\033[0m")
 
-    def __printSuccess(self, diskname, name, type):
+    def __printSuccess(self, diskname, codePart, name, type):
         type = "PRIMARIA " if type == 'P' else ("EXTENDIDA" if type == 'E' else "LOGICA   ")
-        print(f"\033[32m -> unmount: Partición desmontada exitosamente en {diskname}. {type} ({name}) [{self.line}:{self.column}]\033[0m")
+        print(f"\033[32m -> unmount: Partición desmontada exitosamente en {diskname}. {type} ({codePart}: {name}) [{self.line}:{self.column}]\033[0m")

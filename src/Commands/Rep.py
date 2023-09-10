@@ -4,6 +4,7 @@ from Structures.MBR import *
 from Structures.EBR import *
 from Env.Env import *
 import os
+import re
 
 class Rep:
     def __init__(self, line: int, column: int):
@@ -44,8 +45,9 @@ class Rep:
             return
 
     def __reportMBR(self):
-        if self.params['id'][3:] in disks:
-            diskPath = disks[self.params['id'][3:]]['path']
+        match = re.match(r'(\d+)([a-zA-Z]+\d+)', self.params['id'])
+        if match.group(2) in disks:
+            diskPath = disks[match.group(2)]['path']
             absolutePath = os.path.abspath(diskPath)
             if not os.path.exists(absolutePath):
                 self.__printError(' -> Error rep: No existe el disco para reportar.')
@@ -84,13 +86,14 @@ class Rep:
                 dot += '\n\t\t\t\t\t</TABLE>\n\t\t\t\t</TD>\n\t\t\t</TR>'
                 dot += '\n\t\t</TABLE>\n\t>];'
                 dot += '\n}'
-                self.__generateFile(dot)
+                self.__generateFile(dot, match.group(2))
         else:
             self.__printError(' -> Error rep: No existe el disco para reportarlo.')
 
     def __reportDisk(self):
-        if self.params['id'][3:] in disks:
-            diskPath = disks[self.params['id'][3:]]['path']
+        match = re.match(r'(\d+)([a-zA-Z]+\d+)', self.params['id'])
+        if match.group(2) in disks:
+            diskPath = disks[match.group(2)]['path']
             absolutePath = os.path.abspath(diskPath)
             if not os.path.exists(absolutePath):
                 self.__printError(' -> Error rep: No existe el disco para reportar.')
@@ -166,7 +169,7 @@ class Rep:
                 dot += extendedParts
                 dot += '\n\t\t</TABLE>\n\t>];'
                 dot += '\n}'
-                self.__generateFile(dot)
+                self.__generateFile(dot, match.group(2))
         else:
             self.__printError(' -> Error rep: No existe el disco para reportarlo.')
 
@@ -181,7 +184,7 @@ class Rep:
             listEBR.insert(ebr)
         return listEBR
 
-    def __generateFile(self, dot):
+    def __generateFile(self, dot, diskname):
         absolutePath = os.path.abspath(self.params['path'])
         destdir = os.path.dirname(absolutePath)
         extension = os.path.basename(absolutePath).split('.')[1]
@@ -192,7 +195,7 @@ class Rep:
             file.write(dot)
         os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
         # os.remove(absolutePath.replace(extension, "dot"))
-        self.__printSuccess(self.params['name'].lower(), self.params['id'][3:])
+        self.__printSuccess(self.params['name'].lower(), diskname)
 
     def __percentage(self, start, firstEmptyByte, size) -> int or float:
         number = round(((start - firstEmptyByte) / size) * 100, 2)
