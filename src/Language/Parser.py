@@ -5,6 +5,7 @@ from Commands.Rmdisk import Rmdisk
 from Commands.Fdisk import Fdisk
 from Commands.Mount import Mount
 from Commands.Unmount import Unmount
+from Commands.Mkfs import Mkfs
 from Commands.Rep import Rep
 
 precedence = ()
@@ -29,6 +30,7 @@ def p_COMMAND(t):
                 | FDISK
                 | MOUNT
                 | UNMOUNT
+                | MKFS
                 | REP
                 | COMMENTARY'''
     t[0] = t[1]
@@ -148,6 +150,34 @@ def p_UNMOUNT(t):
         t[0] = Unmount(t.lineno(1), t.lexpos(1))
         t[0].setParams({})
         t[0].exec()
+
+def p_MKFS(t):
+    '''MKFS : RW_mkfs MKFSPARAMS
+            | RW_mkfs'''
+    if len(t) != 2:
+        t[0] = Mkfs(t.lineno(1), t.lexpos(1))
+        t[0].setParams(t[2])
+        t[0].exec()
+    else:
+        t[0] = Mkfs(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
+
+def p_MKFSPARAMS(t):
+    '''MKFSPARAMS   : MKFSPARAMS MKFSPARAM
+                    | MKFSPARAM'''
+    if len(t) != 2:
+        t[1][t[2][0]] = t[2][1]
+        t[0] = t[1]
+    else:
+        t[0] = {'fs':'2fs', t[1][0]: t[1][1]}
+
+def p_MKFSPARAM(t):
+    '''MKFSPARAM    : RW_id   TK_equ TK_id
+                    | RW_type TK_equ RW_full
+                    | RW_fs   TK_equ RW_2fs
+                    | RW_fs   TK_equ RW_3fs'''
+    t[0] = [t[1][1:].lower(), t[3]]
 
 def p_REP(t):
     '''REP  : RW_rep REPPARAMS

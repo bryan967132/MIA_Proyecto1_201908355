@@ -44,6 +44,8 @@ reserveds = {
     'file'      : 'RW_file',
     'ls'        : 'RW_ls',
     'full'      : 'RW_full',
+    '2fs'       : 'RW_2fs',
+    '3fs'       : 'RW_3fs',
 }
 
 tokens = tuple(reserveds.values()) + (
