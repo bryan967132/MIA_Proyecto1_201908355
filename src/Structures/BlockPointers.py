@@ -14,5 +14,8 @@ class BlockPointers:
             pointers.append(int.from_bytes(data[i * 4:4 + i * 4], byteorder='big', signed=True))
         return BlockPointers(pointers)
 
+    def sizeOf():
+        return len(BlockPointers().encode())
+
     def __str__(self) -> str:
         return f'pointers: {self.pointers}\n'

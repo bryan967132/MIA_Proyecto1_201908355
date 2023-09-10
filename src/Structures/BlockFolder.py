@@ -16,6 +16,9 @@ class BlockFolder:
             content.append(Content.decode(data[i * 16:16 + i * 16]))
         return BlockFolder(content)
 
+    def sizeOf():
+        return len(BlockFolder().encode())
+
     def __str__(self) -> str:
         contents = ''
         for i in self.content:

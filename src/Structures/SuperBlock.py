@@ -96,6 +96,9 @@ class SuperBlock:
             block_start
         )
 
+    def sizeOf():
+        return len(SuperBlock().encode())
+
     def __str__(self) -> str:
         return f'''filsystem_type: {self.filesystem_type}
 inodes_count: {self.inodes_count}

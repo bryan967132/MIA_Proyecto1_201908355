@@ -14,5 +14,8 @@ class BlockFile:
             content.append(data[i:i + 1].decode('utf-8') if data[i:i + 1] != b'\x00' else '')
         return BlockFile(content)
 
+    def sizeOf():
+        return len(BlockFile().encode())
+
     def __str__(self) -> str:
         return f'content: {self.content}\n'

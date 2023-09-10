@@ -59,6 +59,9 @@ class InodesTable:
             perm
         )
 
+    def sizeOf():
+        return len(InodesTable().encode())
+
     def __str__(self) -> str:
         return f'''uid: {self.uid}
 gid: {self.gid}
