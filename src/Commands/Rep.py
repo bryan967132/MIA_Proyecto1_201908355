@@ -1,7 +1,14 @@
 from Structures.ListEBR import ListEBR
-from io import BufferedRandom
+from Structures.SuperBlock import *
+from Structures.InodesTable import *
+from Structures.BlockFolder import *
+from Structures.BlockFile import *
+from Structures.BlockPointers import *
+from Structures.Journaling import *
+from Structures.Tree import *
 from Structures.MBR import *
 from Structures.EBR import *
+from io import BufferedRandom
 from Env.Env import *
 import os
 import re
@@ -26,18 +33,25 @@ class Rep:
             self.__reportDisk()
             return
         if self.params['name'].lower() == 'inode':
-            return
-        if self.params['name'].lower() == 'journaling':
+            self.__reportInode()
             return
         if self.params['name'].lower() == 'block':
+            self.__reportBlock()
+            return
+        if self.params['name'].lower() == 'journaling':
+            self.__reportJournaling()
             return
         if self.params['name'].lower() == 'bm_inode':
+            self.__reportBMInode()
             return
         if self.params['name'].lower() == 'bm_block':
+            self.__reportBMBlock()
             return
         if self.params['name'].lower() == 'tree':
+            self.__reportTree()
             return
         if self.params['name'].lower() == 'sb':
+            self.__reportSb()
             return
         if self.params['name'].lower() == 'file':
             return
@@ -49,17 +63,14 @@ class Rep:
         if match.group(2) in disks:
             diskPath = disks[match.group(2)]['path']
             absolutePath = os.path.abspath(diskPath)
-            if not os.path.exists(absolutePath):
-                self.__printError(' -> Error rep: No existe el disco para reportar.')
-                return
             with open(absolutePath, 'rb') as file:
                 readed_bytes = file.read(127)
                 mbr = MBR.decode(readed_bytes)
                 dot = 'digraph MBR{\n\tnode [shape=plaintext];'
                 dot += '\n\ttabla[label=<\n\t\t<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">'
                 dot += '\n\t\t\t<TR>\n\t\t\t\t<TD BORDER="1">\n\t\t\t\t\t<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">'
-                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#4A235A"><FONT COLOR="white">{self.params["id"][3:]}</FONT></TD>\n\t\t\t\t\t\t</TR>'
-                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#4A235A"><FONT COLOR="white">MBR</FONT></TD>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#4A235A"></TD>\n\t\t\t\t\t\t</TR>'
+                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#4A235A"><FONT COLOR="white">{match.group(2)}</FONT></TD>\n\t\t\t\t\t\t</TR>'
+                dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#4A235A"><FONT COLOR="white">MBR</FONT></TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#4A235A"></TD>\n\t\t\t\t\t\t</TR>'
                 dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">mbr_tamano</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{mbr.size}</TD>\n\t\t\t\t\t\t</TR>'
                 dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#E8DAEF">mbr_fecha_creacion</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#E8DAEF">{mbr.date}</TD>\n\t\t\t\t\t\t</TR>'
                 dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">mbr_fecha_creacion</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{mbr.date}</TD>\n\t\t\t\t\t\t</TR>'
@@ -86,18 +97,15 @@ class Rep:
                 dot += '\n\t\t\t\t\t</TABLE>\n\t\t\t\t</TD>\n\t\t\t</TR>'
                 dot += '\n\t\t</TABLE>\n\t>];'
                 dot += '\n}'
-                self.__generateFile(dot, match.group(2))
+                self.__generateFile(dot, f'({match.group(2)})')
         else:
-            self.__printError(' -> Error rep: No existe el disco para reportarlo.')
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
 
     def __reportDisk(self):
         match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
         if match.group(2) in disks:
             diskPath = disks[match.group(2)]['path']
             absolutePath = os.path.abspath(diskPath)
-            if not os.path.exists(absolutePath):
-                self.__printError(' -> Error rep: No existe el disco para reportar.')
-                return
             with open(absolutePath, 'rb') as file:
                 readed_bytes = file.read(127)
                 mbr = MBR.decode(readed_bytes)
@@ -162,16 +170,233 @@ class Rep:
 
                 dot = 'digraph Disk{\n\tnode [shape=plaintext];'
                 dot += '\n\ttabla[label=<\n\t\t<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="2" CELLPADDING="4">'
-                dot += f'\n\t\t\t<TR>\n\t\t\t\t<TD COLSPAN="{occupiedCells}">{self.params["id"][3:]}</TD>\n\t\t\t</TR>'
+                dot += f'\n\t\t\t<TR>\n\t\t\t\t<TD COLSPAN="{occupiedCells}">{match.group(2)}</TD>\n\t\t\t</TR>'
                 dot += '\n\t\t\t<TR>\n\t\t\t\t<TD COLSPAN="10" ROWSPAN="6">MBR</TD>'
                 dot += dotParts
                 dot += '\n\t\t\t</TR>'
                 dot += extendedParts
                 dot += '\n\t\t</TABLE>\n\t>];'
                 dot += '\n}'
-                self.__generateFile(dot, match.group(2))
+                self.__generateFile(dot, f'({match.group(2)})')
         else:
-            self.__printError(' -> Error rep: No existe el disco para reportarlo.')
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
+
+    def __reportInode(self):
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
+        if match.group(2) in disks:
+            if self.params['id'] in disks[match.group(2)]['ids']:
+                absolutePath = disks[match.group(2)]['path']
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                with open(absolutePath, 'rb') as file:
+                    readed_bytes = file.read(127)
+                    mbr = MBR.decode(readed_bytes)
+                    for i in range(len(mbr.partitions)):
+                        if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
+                            file.seek(mbr.partitions[i].start)
+                            superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
+                            file.seek(superBlock.bm_inode_start)
+                            bm_inodes = file.read(superBlock.inodes_count).decode('utf-8')
+                            dot = 'digraph Inodes{\n\tnode [shape=box];\n\trankdir=LR;'
+                            for i in range(len(bm_inodes)):
+                                if bm_inodes[i] == '1':
+                                    file.seek(superBlock.inode_start + i * InodesTable.sizeOf())
+                                    inode = InodesTable.decode(file.read(InodesTable.sizeOf()))
+                                    dot += f'''\n\tn{i}[label = <<TABLE BORDER="0">
+        <TR><TD colspan="2">Inodo {i}</TD></TR>
+        <TR><TD ALIGN="LEFT">uid:</TD><TD ALIGN="LEFT">{inode.uid}</TD></TR>
+        <TR><TD ALIGN="LEFT">gid:</TD><TD ALIGN="LEFT">{inode.gid}</TD></TR>
+        <TR><TD ALIGN="LEFT">size:</TD><TD ALIGN="LEFT">{inode.size}</TD></TR>
+        <TR><TD ALIGN="LEFT">atime:</TD><TD ALIGN="LEFT">{inode.atime}</TD></TR>
+        <TR><TD ALIGN="LEFT">ctime:</TD><TD ALIGN="LEFT">{inode.ctime}</TD></TR>
+        <TR><TD ALIGN="LEFT">mtime:</TD><TD ALIGN="LEFT">{inode.mtime}</TD></TR>'''
+                                    for i in range(len(inode.block)):
+                                        dot += f'\n\t\t<TR><TD ALIGN="LEFT">apt{i + 1}:</TD><TD ALIGN="LEFT">{inode.block[i]}</TD></TR>'
+                                    dot += f'''
+        <TR><TD ALIGN="LEFT">type:</TD><TD ALIGN="LEFT">{inode.type}</TD></TR>
+        <TR><TD ALIGN="LEFT">perm:</TD><TD ALIGN="LEFT">{inode.perm}</TD></TR>
+    </TABLE>>];'''
+                            dot += '\n'
+                            nodes = ''
+                            for i in range(len(bm_inodes)):
+                                if bm_inodes[i] == '1':
+                                    if nodes != '':
+                                        nodes += ' -> '
+                                    else:
+                                        nodes += '\t'
+                                    nodes += 'n' + str(i)
+                            dot += nodes
+                            dot += ';\n}'
+                            self.__generateFile(dot, f'({namePartition}: {match.group(2)})')
+                            return
+            else:
+                self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')
+        else:
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
+
+    def __reportBlock(self):
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
+        if match.group(2) in disks:
+            if self.params['id'] in disks[match.group(2)]['ids']:
+                absolutePath = disks[match.group(2)]['path']
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                with open(absolutePath, 'rb') as file:
+                    readed_bytes = file.read(127)
+                    mbr = MBR.decode(readed_bytes)
+                    for i in range(len(mbr.partitions)):
+                        if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
+                            file.seek(mbr.partitions[i].start)
+                            superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
+                            file.seek(superBlock.bm_inode_start)
+                            tree: Tree = Tree(superBlock, file)
+                            blocks = tree.getBlocks()
+                            dot = 'digraph Blocks{\n\tnode [shape=box];\n\trankdir=LR;'
+                            for i in blocks:
+                                dot += f'{i[1].getDotB(i[0])}'
+                            blocksDot = ''
+                            for i in blocks:
+                                if blocksDot != '':
+                                    blocksDot += ' -> '
+                                blocksDot += f'n{i[0]}'
+                            dot += blocksDot
+                            dot += '\n}'
+                            self.__generateFile(dot, f'({namePartition}: {match.group(2)})')
+                            return
+            else:
+                self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')
+        else:
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
+
+    def __reportJournaling(self):
+        pass
+
+    def __reportBMInode(self):
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
+        if match.group(2) in disks:
+            if self.params['id'] in disks[match.group(2)]['ids']:
+                absolutePath = disks[match.group(2)]['path']
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                with open(absolutePath, 'rb') as file:
+                    readed_bytes = file.read(127)
+                    mbr = MBR.decode(readed_bytes)
+                    for i in range(len(mbr.partitions)):
+                        if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
+                            file.seek(mbr.partitions[i].start)
+                            superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
+                            file.seek(superBlock.bm_inode_start)
+                            bm_inodes = file.read(superBlock.inodes_count).decode('utf-8')
+                            matriz: str = ''
+                            i: int = 0
+                            while i < len(bm_inodes):
+                                matriz += bm_inodes[i] + '  '
+                                if (i + 1) % 20 == 0:
+                                    matriz += '\n'
+                                i += 1
+                            with open(os.path.abspath(self.params['path']), 'w') as file:
+                                file.write(matriz)
+                            self.__printSuccess(self.params['name'].lower(), f'({namePartition}: {match.group(2)})')
+                            return
+            else:
+                self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')
+        else:
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
+
+    def __reportBMBlock(self):
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
+        if match.group(2) in disks:
+            if self.params['id'] in disks[match.group(2)]['ids']:
+                absolutePath = disks[match.group(2)]['path']
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                with open(absolutePath, 'rb') as file:
+                    readed_bytes = file.read(127)
+                    mbr = MBR.decode(readed_bytes)
+                    for i in range(len(mbr.partitions)):
+                        if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
+                            file.seek(mbr.partitions[i].start)
+                            superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
+                            file.seek(superBlock.bm_block_start)
+                            bm_blocks = file.read(superBlock.blocks_count).decode('utf-8')
+                            matriz: str = ''
+                            i: int = 0
+                            while i < len(bm_blocks):
+                                matriz += bm_blocks[i] + '  '
+                                if (i + 1) % 20 == 0:
+                                    matriz += '\n'
+                                i += 1
+                            with open(os.path.abspath(self.params['path']), 'w') as file:
+                                file.write(matriz)
+                            self.__printSuccess(self.params['name'].lower(), f'({namePartition}: {match.group(2)})')
+                            return
+            else:
+                self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')
+        else:
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
+
+    def __reportTree(self):
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
+        if match.group(2) in disks:
+            if self.params['id'] in disks[match.group(2)]['ids']:
+                absolutePath = disks[match.group(2)]['path']
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                with open(absolutePath, 'rb') as file:
+                    readed_bytes = file.read(127)
+                    mbr = MBR.decode(readed_bytes)
+                    for i in range(len(mbr.partitions)):
+                        if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
+                            file.seek(mbr.partitions[i].start)
+                            superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
+                            file.seek(superBlock.bm_inode_start)
+                            tree: Tree = Tree(superBlock, file)
+                            self.__generateFile(tree.getDot(), f'({namePartition}: {match.group(2)})')
+                            return
+            else:
+                self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')
+        else:
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
+
+    def __reportSb(self):
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
+        if match.group(2) in disks:
+            if self.params['id'] in disks[match.group(2)]['ids']:
+                absolutePath = disks[match.group(2)]['path']
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                with open(absolutePath, 'rb') as file:
+                    readed_bytes = file.read(127)
+                    mbr = MBR.decode(readed_bytes)
+                    for i in range(len(mbr.partitions)):
+                        if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
+                            file.seek(mbr.partitions[i].start)
+                            superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
+                            dot = 'digraph SuperBlock{\n\tnode [shape=plaintext];'
+                            dot += '\n\ttabla[label=<\n\t\t<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">'
+                            dot += '\n\t\t\t<TR>\n\t\t\t\t<TD BORDER="1">\n\t\t\t\t\t<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD COLSPAN="2" BGCOLOR="#145A32"><FONT COLOR="white">{match.group(2)}</FONT></TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#145A32"><FONT COLOR="white">SuperBlock</FONT></TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#145A32"><FONT COLOR="white">{namePartition}</FONT></TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">filesystem_type</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.filesystem_type}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">inodes_count</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.inodes_count}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">blocks_count</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.blocks_count}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">free_inodes_count</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.free_inodes_count}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">free_blocks_count</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.free_blocks_count}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">mtime</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.mtime}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">umtime</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.umtime}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">mnt_count</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.mnt_count}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">magic</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.magic}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">inode_size</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.inode_s}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">block_size</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.block_s}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">first_ino</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.first_ino}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">first_blo</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.first_blo}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">bm_inode_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.bm_inode_start}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">bm_block_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.bm_block_start}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">inode_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.inode_start}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">inode_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.inode_start}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += '\n\t\t\t\t\t</TABLE>\n\t\t\t\t</TD>\n\t\t\t</TR>'
+                            dot += '\n\t\t</TABLE>\n\t>];'
+                            dot += '\n}'
+                            self.__generateFile(dot, f'({namePartition}: {match.group(2)})')
+                            return
+            else:
+                self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} para reportar en el disco {match.group(2)}.')
+        else:
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
 
     def __getListEBR(self, start : int, size : int, file : BufferedRandom) -> ListEBR:
         listEBR : ListEBR = ListEBR(start, size)
@@ -194,7 +419,7 @@ class Rep:
         with open(absolutePathDot, 'w') as file:
             file.write(dot)
         os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
-        # os.remove(absolutePath.replace(extension, "dot"))
+        #os.remove(absolutePath.replace(extension, "dot"))
         self.__printSuccess(self.params['name'].lower(), diskname)
 
     def __percentage(self, start, firstEmptyByte, size) -> int or float:

@@ -19,5 +19,21 @@ class BlockFile:
     def sizeOf():
         return len(BlockFile().encode())
 
+    def getDot(self, i) -> str:
+        content = ''.join(self.content).replace('\n', '\\n').replace('\"', '\\\"').replace('\'', '\\\'')
+        return f'''block{i}[label=<
+		<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+			<TR><TD BGCOLOR="#FFECA9" PORT="B{i}">Block {i}</TD></TR>
+			<TR><TD>{content}</TD></TR>
+		</TABLE>
+	>];'''
+
+    def getDotB(self, i) -> str:
+        content = ''.join(self.content).replace('\n', '\\n').replace('\"', '\\\"').replace('\'', '\\\'')
+        return f'''\n\tn{i}[label = <<TABLE BORDER="0">
+        <TR><TD>Bloque Archivo {i}</TD></TR>
+        <TR><TD ALIGN="LEFT">{content}</TD></TR>
+    </TABLE>>];'''
+
     def __str__(self) -> str:
         return f'content: {self.content}\n'

@@ -63,6 +63,21 @@ class InodesTable:
     def sizeOf():
         return len(InodesTable().encode())
 
+    def getDot(self, i) -> str:
+        apuntadores: str = ''
+        for p in range(12):
+            apuntadores += f'''
+            <TR><TD>apt{p + 1}</TD><TD port="A{p}">{self.block[p]}</TD></TR>'''
+        for p in range(12, 15):
+            apuntadores += f'''
+			<TR><TD BGCOLOR="#FFBBB1">apt{p + 1}</TD><TD port="A{p}">{self.block[p]}</TD></TR>'''
+        
+        return f'''inode{i}[label=<
+		<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+			<TR><TD COLSPAN="2" BGCOLOR="{"#C1E4F7" if self.type == '0' else "#7AB648"}" PORT="I{i}">Inodo {i}</TD></TR>{apuntadores}
+		</TABLE>
+	>];'''
+
     def __str__(self) -> str:
         return f'''uid: {self.uid}
 gid: {self.gid}

@@ -20,6 +20,25 @@ class BlockFolder:
     def sizeOf():
         return len(BlockFolder().encode())
 
+    def getDot(self, i) -> str:
+        pointers = ''
+        for p in range(len(self.content)):
+            pointers += f'''
+                <TR><TD>{self.content[p].name.strip()}</TD><TD PORT="A{p}">{self.content[p].inodo if self.content[p].inodo != -1 else " "}</TD></TR>'''
+        return f'''block0[label=<
+        <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2" BGCOLOR="#D1BCD2" PORT="B{i}">Block {i}</TD></TR>{pointers}
+        </TABLE>
+    >];'''
+
+    def getDotB(self, i) -> str:
+        pointers = ''
+        for p in range(len(self.content)):
+            pointers += f'<TR><TD ALIGN="LEFT">{self.content[p].name.strip()}</TD><TD ALIGN="LEFT">{self.content[p].inodo}</TD></TR>'
+        return f'''\n\tn{i}[label = <<TABLE BORDER="0">
+        <TR><TD COLSPAN="2">Bloque Carpeta {i}</TD></TR>{pointers}
+    </TABLE>>];'''
+
     def __str__(self) -> str:
         contents = ''
         for i in self.content:
