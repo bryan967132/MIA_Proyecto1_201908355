@@ -118,7 +118,6 @@ class Mkfs:
         superBlock.inode_start = superBlock.bm_block_start + 3 * n
         superBlock.block_start = superBlock.inode_start + n * InodesTable.sizeOf()
 
-
         inode0: InodesTable = InodesTable(block = [-1 for i in range(15)])
         inode0.block[0] = 0
 
