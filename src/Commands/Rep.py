@@ -4,7 +4,7 @@ from Structures.InodesTable import *
 from Structures.BlockFolder import *
 from Structures.BlockFile import *
 from Structures.BlockPointers import *
-from Structures.Journaling import *
+from Structures.Journal import *
 from Structures.Tree import *
 from Structures.MBR import *
 from Structures.EBR import *

@@ -5,9 +5,8 @@ class BlockFile:
         self.content: list[str] = content
 
     def encode(self):
-        result_b = b''
-        for i in self.content:
-            result_b += i.encode('utf-8') if i != '' else b'\x00'
+        contetn_str = ''.join(self.content).encode('utf-8')
+        result_b = contetn_str + (64 - len(contetn_str)) * b'\x00'
         return result_b
 
     def decode(data):
@@ -23,7 +22,7 @@ class BlockFile:
         content = ''.join(self.content).replace('\n', '\\n').replace('\"', '\\\"').replace('\'', '\\\'')
         return f'''block{i}[label=<
 		<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-			<TR><TD BGCOLOR="#FFECA9" PORT="B{i}">Block {i}</TD></TR>
+			<TR><TD BGCOLOR="#FFECA9" PORT="B{i}">Bloque {i}</TD></TR>
 			<TR><TD>{content}</TD></TR>
 		</TABLE>
 	>];'''

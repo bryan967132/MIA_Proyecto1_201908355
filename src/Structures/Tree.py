@@ -4,7 +4,7 @@ from Structures.InodesTable import *
 from Structures.BlockFolder import *
 from Structures.BlockFile import *
 from Structures.BlockPointers import *
-from Structures.Journaling import *
+from Structures.Journal import *
 from io import BufferedRandom
 
 class Tree:
