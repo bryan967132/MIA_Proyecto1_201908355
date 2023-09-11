@@ -71,7 +71,7 @@ class Mkfs:
         superBlock.inode_start = superBlock.bm_block_start + 3 * n
         superBlock.block_start = superBlock.inode_start + n * InodesTable.sizeOf()
 
-        inode0: InodesTable = InodesTable(block = [-1 for i in range(15)])
+        inode0: InodesTable = InodesTable(block = [-1 for i in range(15)], perm = 777)
         inode0.block[0] = 0
 
         blockFolder: BlockFolder = BlockFolder()
@@ -80,7 +80,7 @@ class Mkfs:
         blockFolder.content[2] = Content('users.txt'.ljust(12), 1)
 
         userstxt: str = '1,G,root      \n1,U,root      ,root        ,123       \n'
-        inode1: InodesTable = InodesTable(type = '1', size = len(userstxt), block = [-1 for i in range(15)])
+        inode1: InodesTable = InodesTable(type = '1', size = len(userstxt), block = [-1 for i in range(15)], perm = 777)
         inode1.block[0] = 1
 
         blockFile: BlockFile = BlockFile(['' for i in range(64)])
@@ -118,7 +118,7 @@ class Mkfs:
         superBlock.inode_start = superBlock.bm_block_start + 3 * n
         superBlock.block_start = superBlock.inode_start + n * InodesTable.sizeOf()
 
-        inode0: InodesTable = InodesTable(block = [-1 for i in range(15)])
+        inode0: InodesTable = InodesTable(block = [-1 for i in range(15)], perm = 777)
         inode0.block[0] = 0
 
         blockFolder: BlockFolder = BlockFolder()
@@ -127,7 +127,7 @@ class Mkfs:
         blockFolder.content[2] = Content('users.txt'.ljust(12), 1)
 
         userstxt: str = '1,G,root      \n1,U,root      ,root        ,123       \n'
-        inode1: InodesTable = InodesTable(type = '1', size = len(userstxt), block = [-1 for i in range(15)])
+        inode1: InodesTable = InodesTable(type = '1', size = len(userstxt), block = [-1 for i in range(15)], perm = 777)
         inode1.block[0] = 1
 
         blockFile: BlockFile = BlockFile(['' for i in range(64)])
