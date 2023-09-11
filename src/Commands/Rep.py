@@ -387,7 +387,7 @@ class Rep:
                             dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">bm_inode_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.bm_inode_start}</TD>\n\t\t\t\t\t\t</TR>'
                             dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">bm_block_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.bm_block_start}</TD>\n\t\t\t\t\t\t</TR>'
                             dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#27AE60">inode_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#27AE60">{superBlock.inode_start}</TD>\n\t\t\t\t\t\t</TR>'
-                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">inode_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.inode_start}</TD>\n\t\t\t\t\t\t</TR>'
+                            dot += f'\n\t\t\t\t\t\t<TR>\n\t\t\t\t\t\t\t<TD BGCOLOR="#FFFFFF">block_start</TD>\n\t\t\t\t\t\t\t<TD COLSPAN="1" BGCOLOR="#FFFFFF">{superBlock.block_start}</TD>\n\t\t\t\t\t\t</TR>'
                             dot += '\n\t\t\t\t\t</TABLE>\n\t\t\t\t</TD>\n\t\t\t</TR>'
                             dot += '\n\t\t</TABLE>\n\t>];'
                             dot += '\n}'
