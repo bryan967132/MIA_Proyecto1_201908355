@@ -4,7 +4,7 @@ from Structures.InodesTable import *
 from Structures.BlockFolder import *
 from Structures.BlockFile import *
 from Structures.BlockPointers import *
-from Structures.Journaling import *
+from Structures.Journal import *
 from Structures.MBR import *
 from Structures.EBR import *
 from io import BufferedRandom
@@ -98,7 +98,7 @@ class Mkfs:
             file.write(blockFolder.encode() + blockFile.encode())
 
     def __ext3(self, absolutePath: str, partition: Partition):
-        n: int = int(((partition.size - SuperBlock.sizeOf()) / (4 + Journaling.sizeOf() + InodesTable.sizeOf() + 3 * BlockFolder.sizeOf())) // 1)
+        n: int = int(((partition.size - SuperBlock.sizeOf()) / (4 + Journal.sizeOf() + InodesTable.sizeOf() + 3 * BlockFolder.sizeOf())) // 1)
         superBlock: SuperBlock = SuperBlock()
         superBlock.filesystem_type = 3
         superBlock.inodes_count = n
@@ -113,7 +113,7 @@ class Mkfs:
         superBlock.block_s = BlockFolder.sizeOf()
         superBlock.first_ino = 2
         superBlock.first_blo = 2
-        superBlock.bm_inode_start = partition.start + Journaling.sizeOf() + SuperBlock.sizeOf()
+        superBlock.bm_inode_start = partition.start + n * Journal.sizeOf() + SuperBlock.sizeOf()
         superBlock.bm_block_start = superBlock.bm_inode_start + n
         superBlock.inode_start = superBlock.bm_block_start + 3 * n
         superBlock.block_start = superBlock.inode_start + n * InodesTable.sizeOf()
@@ -134,14 +134,14 @@ class Mkfs:
         for c in range(len(userstxt)):
             blockFile.content[c] = userstxt[c]
 
-        journaling: Journaling = Journaling()
-        journaling.records[0] = Record('mkfile'.ljust(8), 'users.txt'.ljust(12), ''.ljust(8), datetime.datetime.now())
+        journal1: Journal = Journal('mkdir'.ljust(8), '/', '', datetime.datetime.now())
+        journal2: Journal = Journal('mkfile'.ljust(8), 'users.txt', userstxt, datetime.datetime.now())
 
         with open(absolutePath, 'r+b') as file:
             file.seek(partition.start)
             file.write(superBlock.encode())
             file.seek(partition.start + SuperBlock.sizeOf())
-            file.write(journaling.encode())
+            file.write(journal1.encode() + journal2.encode())
             file.seek(superBlock.bm_inode_start)
             file.write('1'.encode('utf-8') * 2 + '0'.encode('utf-8') * (n - 2) + '1'.encode('utf-8') * 2 + '0'.encode('utf-8') * (3 * n - 2))
             file.seek(superBlock.inode_start)
