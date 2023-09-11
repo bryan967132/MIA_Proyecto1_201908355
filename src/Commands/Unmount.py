@@ -24,7 +24,7 @@ class Unmount:
             return
 
     def __unmount(self):
-        match = re.match(r'(\d+)([a-zA-Z]+\d+)', self.params['id'])
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']

@@ -45,7 +45,7 @@ class Rep:
             return
 
     def __reportMBR(self):
-        match = re.match(r'(\d+)([a-zA-Z]+\d+)', self.params['id'])
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
         if match.group(2) in disks:
             diskPath = disks[match.group(2)]['path']
             absolutePath = os.path.abspath(diskPath)
@@ -91,7 +91,7 @@ class Rep:
             self.__printError(' -> Error rep: No existe el disco para reportarlo.')
 
     def __reportDisk(self):
-        match = re.match(r'(\d+)([a-zA-Z]+\d+)', self.params['id'])
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
         if match.group(2) in disks:
             diskPath = disks[match.group(2)]['path']
             absolutePath = os.path.abspath(diskPath)
