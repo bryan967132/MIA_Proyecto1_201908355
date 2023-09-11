@@ -257,8 +257,8 @@ class Rep:
                                 if blocksDot != '':
                                     blocksDot += ' -> '
                                 blocksDot += f'n{i[0]}'
-                            dot += blocksDot
-                            dot += '\n}'
+                            dot += '\n\t' + blocksDot
+                            dot += ';\n}'
                             self.__generateFile(dot, f'({namePartition}: {match.group(2)})')
                             return
             else:

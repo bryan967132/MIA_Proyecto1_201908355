@@ -34,7 +34,7 @@ class BlockFolder:
     def getDotB(self, i) -> str:
         pointers = ''
         for p in range(len(self.content)):
-            pointers += f'<TR><TD ALIGN="LEFT">{self.content[p].name.strip()}</TD><TD ALIGN="LEFT">{self.content[p].inodo}</TD></TR>'
+            pointers += f'\n\t\t<TR><TD ALIGN="LEFT">{self.content[p].name.strip()}</TD><TD ALIGN="LEFT">{self.content[p].inodo}</TD></TR>'
         return f'''\n\tn{i}[label = <<TABLE BORDER="0">
         <TR><TD COLSPAN="2">Bloque Carpeta {i}</TD></TR>{pointers}
     </TABLE>>];'''
