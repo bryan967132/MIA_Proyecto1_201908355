@@ -29,7 +29,7 @@ class Mkfs:
             self.__printError(' -> Error mkfs: Faltan parámetros obligatorios para formatear la partición')
 
     def __mkfs(self):
-        match = re.match(r'(\d+)([a-zA-Z]+\d+)', self.params['id'])
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']
