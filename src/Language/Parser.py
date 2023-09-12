@@ -8,6 +8,7 @@ from Commands.Unmount import Unmount
 from Commands.Mkfs import Mkfs
 from Commands.Login import Login
 from Commands.Logout import Logout
+from Commands.Pause import Pause
 from Commands.Rep import Rep
 
 precedence = ()
@@ -35,6 +36,7 @@ def p_COMMAND(t):
                 | MKFS
                 | LOGIN
                 | LOGOUT
+                | PAUSE
                 | REP
                 | COMMENTARY'''
     t[0] = t[1]
@@ -214,6 +216,11 @@ def p_LOGINPARAM(t):
 def p_LOGOUT(t):
     '''LOGOUT : RW_logout'''
     t[0] = Logout(t.lineno(1), t.lexpos(1))
+    t[0].exec()
+
+def p_PAUSE(t):
+    '''PAUSE : RW_pause'''
+    t[0] = Pause(t.lineno(1), t.lexpos(1))
     t[0].exec()
 
 def p_REP(t):
