@@ -278,18 +278,21 @@ class Rep:
                         if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
                             file.seek(mbr.partitions[i].start)
                             superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
-                            file.seek(mbr.partitions[i].start + SuperBlock.sizeOf())
-                            dot = 'digraph Inodes{\n\tnode [shape=plaintext];\n\trankdir=LR;'
-                            dot += f'\n\tn{i}[label = <<TABLE BORDER="1" >'
-                            dot += f'\n\t\t<TR><TD COLSPAN="4">{match.group(2)}: {namePartition}</TD></TR>'
-                            dot += f'\n\t\t<TR><TD>Operacion</TD><TD>Path</TD><TD>Contenido</TD><TD>Fecha</TD></TR>'
-                            for r in range(superBlock.inodes_count):
-                                readed_bytes = file.read(Journal.sizeOf())
-                                if readed_bytes != Journal.sizeOf() * b'\x00':
-                                    dot += Journal.decode(readed_bytes).getDot()
-                            dot += '\n\t</TABLE>>];'
-                            dot += '\n}'
-                            self.__generateFile(dot, f'({namePartition}: {match.group(2)})')
+                            if superBlock.filesystem_type == 3:
+                                file.seek(mbr.partitions[i].start + SuperBlock.sizeOf())
+                                dot = 'digraph Inodes{\n\tnode [shape=plaintext];\n\trankdir=LR;'
+                                dot += f'\n\tn{i}[label = <<TABLE BORDER="1" >'
+                                dot += f'\n\t\t<TR><TD COLSPAN="4">{match.group(2)}: {namePartition}</TD></TR>'
+                                dot += f'\n\t\t<TR><TD>Operacion</TD><TD>Path</TD><TD>Contenido</TD><TD>Fecha</TD></TR>'
+                                for r in range(superBlock.inodes_count):
+                                    readed_bytes = file.read(Journal.sizeOf())
+                                    if readed_bytes != Journal.sizeOf() * b'\x00':
+                                        dot += Journal.decode(readed_bytes).getDot()
+                                dot += '\n\t</TABLE>>];'
+                                dot += '\n}'
+                                self.__generateFile(dot, f'({namePartition}: {match.group(2)})')
+                            else:
+                                self.__printError(f' -> Error rep: No puede generarse el reporte para {self.params["id"]} en el disco {match.group(2)}. Journaling no disponible en EXT2.')
                             return
             else:
                 self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')

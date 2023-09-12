@@ -1,8 +1,10 @@
+from Structures.Journal import *
 from Structures.User import *
 from Structures.Tree import *
 from Structures.MBR import *
 from typing import List
 from Env.Env import *
+import datetime
 import re
 
 class Login:
@@ -39,6 +41,17 @@ class Login:
                                     user: User = self.__isValidUser(content, self.params['user'], self.params['pass'])
                                     if user:
                                         currentLogged['User'] = User(user.id, user.group, user.name, user.password)
+                                        currentLogged['Partition'] = namePartition
+                                        currentLogged['PathDisk'] = absolutePath
+                                        if superBlock.filesystem_type == 3:
+                                            file.seek(mbr.partitions[i].start + SuperBlock.sizeOf())
+                                            for r in range(superBlock.inodes_count):
+                                                readed_bytes = file.read(Journal.sizeOf())
+                                                if readed_bytes == Journal.sizeOf() * b'\x00':
+                                                    with open(absolutePath, 'r+b') as file:
+                                                        file.seek(mbr.partitions[i].start + SuperBlock.sizeOf() + r * Journal.sizeOf())
+                                                        file.write(Journal('login', '', f'{user.name},{user.password},{self.params["id"]}', datetime.datetime.now()).encode())
+                                                        break
                                         self.__printSuccess(f' -> login: Sesión iniciada exitosamentes. ({user.name})')
                                     else:
                                         self.__printError(f' -> Error login: El usuario {self.params["user"]} no existe en el sistema.')
