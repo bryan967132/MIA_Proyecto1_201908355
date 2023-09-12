@@ -1,1 +1,2 @@
 disks = {}
+currentLogged = {'User': None}

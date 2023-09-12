@@ -246,7 +246,6 @@ class Rep:
                         if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
                             file.seek(mbr.partitions[i].start)
                             superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
-                            file.seek(superBlock.bm_inode_start)
                             tree: Tree = Tree(superBlock, file)
                             blocks = tree.getBlocks()
                             dot = 'digraph Blocks{\n\tnode [shape=box];\n\trankdir=LR;'
@@ -372,7 +371,6 @@ class Rep:
                         if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
                             file.seek(mbr.partitions[i].start)
                             superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
-                            file.seek(superBlock.bm_inode_start)
                             tree: Tree = Tree(superBlock, file)
                             self.__generateFile(tree.getDot(match.group(2), namePartition), f'({namePartition}: {match.group(2)})')
                             return
@@ -447,7 +445,7 @@ class Rep:
         with open(absolutePathDot, 'w') as file:
             file.write(dot)
         os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
-        #os.remove(absolutePath.replace(extension, "dot"))
+        os.remove(absolutePath.replace(extension, "dot"))
         self.__printSuccess(self.params['name'].lower(), diskname)
 
     def __percentage(self, start, firstEmptyByte, size) -> int or float:

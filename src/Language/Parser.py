@@ -6,6 +6,8 @@ from Commands.Fdisk import Fdisk
 from Commands.Mount import Mount
 from Commands.Unmount import Unmount
 from Commands.Mkfs import Mkfs
+from Commands.Login import Login
+from Commands.Logout import Logout
 from Commands.Rep import Rep
 
 precedence = ()
@@ -31,6 +33,8 @@ def p_COMMAND(t):
                 | MOUNT
                 | UNMOUNT
                 | MKFS
+                | LOGIN
+                | LOGOUT
                 | REP
                 | COMMENTARY'''
     t[0] = t[1]
@@ -69,7 +73,7 @@ def p_MKDISKPARAM(t):
                     | RW_path TK_equ TK_path
                     | RW_fit  TK_equ TK_fit
                     | RW_unit TK_equ TK_unit'''
-    t[0] = [t[1][1:].lower(), t[3]]
+    t[0] = [t[1][1:].lower().strip(), t[3]]
 
 def p_RMDISK(t):
     '''RMDISK   : RW_rmdisk RW_path TK_equ TK_path
@@ -111,7 +115,7 @@ def p_FDISKPARAM(t):
                     | RW_fit    TK_equ TK_fit
                     | RW_delete TK_equ RW_full
                     | RW_add    TK_equ TK_number'''
-    t[0] = [t[1][1:].lower(), t[3]]
+    t[0] = [t[1][1:].lower().strip(), t[3]]
 
 def p_MOUNT(t):
     '''MOUNT    : RW_mount MOUNTPARAMS
@@ -137,7 +141,7 @@ def p_MOUNTPARAMS(t):
 def p_MOUNTPARAM(t):
     '''MOUNTPARAM   : RW_path TK_equ TK_path
                     | RW_name TK_equ TK_id'''
-    t[0] = [t[1][1:].lower(), t[3]]
+    t[0] = [t[1][1:].lower().strip(), t[3]]
 
 def p_UNMOUNT(t):
     '''UNMOUNT  : RW_unmount RW_id TK_equ TK_id
@@ -177,7 +181,40 @@ def p_MKFSPARAM(t):
                     | RW_type TK_equ RW_full
                     | RW_fs   TK_equ RW_2fs
                     | RW_fs   TK_equ RW_3fs'''
-    t[0] = [t[1][1:].lower(), t[3]]
+    t[0] = [t[1][1:].lower().strip(), t[3]]
+
+def p_LOGIN(t):
+    '''LOGIN    : RW_login LOGINPARAMS
+                | RW_login'''
+    if len(t) != 2:
+        t[0] = Login(t.lineno(1), t.lexpos(1))
+        t[0].setParams(t[2])
+        t[0].exec()
+    else:
+        t[0] = Login(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
+
+def p_LOGINPARAMS(t):
+    '''LOGINPARAMS  : LOGINPARAMS LOGINPARAM
+                    | LOGINPARAM'''
+    if len(t) != 2:
+        t[1][t[2][0]] = t[2][1]
+        t[0] = t[1]
+    else:
+        t[0] = {t[1][0]: t[1][1]}
+
+def p_LOGINPARAM(t):
+    '''LOGINPARAM   : RW_user TK_equ TK_id
+                    | RW_pass TK_equ TK_id
+                    | RW_pass TK_equ TK_number
+                    | RW_id   TK_equ TK_id'''
+    t[0] = [t[1][1:].lower().strip(), t[3]]
+
+def p_LOGOUT(t):
+    '''LOGOUT : RW_logout'''
+    t[0] = Logout(t.lineno(1), t.lexpos(1))
+    t[0].exec()
 
 def p_REP(t):
     '''REP  : RW_rep REPPARAMS
@@ -205,7 +242,7 @@ def p_REPPARAM(t):
                 | RW_path TK_equ TK_path
                 | RW_id   TK_equ TK_id
                 | RW_ruta TK_equ TK_path'''
-    t[0] = [t[1][1:].lower(), t[3]]
+    t[0] = [t[1][1:].lower().strip(), t[3]]
 
 def p_NAME(t):
     '''NAME : RW_mbr
