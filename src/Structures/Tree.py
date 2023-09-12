@@ -13,8 +13,9 @@ class Tree:
         self.file: BufferedRandom = file
         self.blocks = []
 
-    def getDot(self) -> str:
+    def getDot(self, diskname, partName) -> str:
         dot: str = 'digraph Tree{\n\tnode [shape=plaintext];\n\trankdir=LR;\n\t'
+        dot += f'label="{diskname}: {partName}";\n\tlabelloc=t;\n\t'
         dot += self.__getDotInode(0)
         dot += '\n}'
         return dot
