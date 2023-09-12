@@ -113,7 +113,7 @@ class Mkfs:
         superBlock.block_s = BlockFolder.sizeOf()
         superBlock.first_ino = 2
         superBlock.first_blo = 2
-        superBlock.bm_inode_start = partition.start + n * Journal.sizeOf() + SuperBlock.sizeOf()
+        superBlock.bm_inode_start = partition.start + SuperBlock.sizeOf() + n * Journal.sizeOf()
         superBlock.bm_block_start = superBlock.bm_inode_start + n
         superBlock.inode_start = superBlock.bm_block_start + 3 * n
         superBlock.block_start = superBlock.inode_start + n * InodesTable.sizeOf()
@@ -134,8 +134,8 @@ class Mkfs:
         for c in range(len(userstxt)):
             blockFile.content[c] = userstxt[c]
 
-        journal1: Journal = Journal('mkdir'.ljust(8), '/', '', datetime.datetime.now())
-        journal2: Journal = Journal('mkfile'.ljust(8), 'users.txt', userstxt, datetime.datetime.now())
+        journal1: Journal = Journal('mkdir', '/', '', datetime.datetime.now())
+        journal2: Journal = Journal('mkfile', 'users.txt', userstxt, datetime.datetime.now())
 
         with open(absolutePath, 'r+b') as file:
             file.seek(partition.start)

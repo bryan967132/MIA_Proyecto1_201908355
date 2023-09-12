@@ -267,7 +267,35 @@ class Rep:
             self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
 
     def __reportJournaling(self):
-        pass
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
+        if match.group(2) in disks:
+            if self.params['id'] in disks[match.group(2)]['ids']:
+                absolutePath = disks[match.group(2)]['path']
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                with open(absolutePath, 'rb') as file:
+                    readed_bytes = file.read(127)
+                    mbr = MBR.decode(readed_bytes)
+                    for i in range(len(mbr.partitions)):
+                        if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
+                            file.seek(mbr.partitions[i].start)
+                            superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
+                            file.seek(mbr.partitions[i].start + SuperBlock.sizeOf())
+                            dot = 'digraph Inodes{\n\tnode [shape=plaintext];\n\trankdir=LR;'
+                            dot += f'\n\tn{i}[label = <<TABLE BORDER="1" >'
+                            dot += f'\n\t\t<TR><TD COLSPAN="4">{match.group(2)}: {namePartition}</TD></TR>'
+                            dot += f'\n\t\t<TR><TD>Operacion</TD><TD>Path</TD><TD>Contenido</TD><TD>Fecha</TD></TR>'
+                            for r in range(superBlock.inodes_count):
+                                readed_bytes = file.read(Journal.sizeOf())
+                                if readed_bytes != Journal.sizeOf() * b'\x00':
+                                    dot += Journal.decode(readed_bytes).getDot()
+                            dot += '\n\t</TABLE>>];'
+                            dot += '\n}'
+                            self.__generateFile(dot, f'({namePartition}: {match.group(2)})')
+                            return
+            else:
+                self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')
+        else:
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
 
     def __reportBMInode(self):
         match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
