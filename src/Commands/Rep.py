@@ -374,7 +374,7 @@ class Rep:
                             superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
                             file.seek(superBlock.bm_inode_start)
                             tree: Tree = Tree(superBlock, file)
-                            self.__generateFile(tree.getDot(), f'({namePartition}: {match.group(2)})')
+                            self.__generateFile(tree.getDot(match.group(2), namePartition), f'({namePartition}: {match.group(2)})')
                             return
             else:
                 self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')
