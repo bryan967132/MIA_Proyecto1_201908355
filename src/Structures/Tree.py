@@ -85,11 +85,11 @@ class Tree:
         blockFile: BlockFile = BlockFile.decode(self.file.read(BlockFile.sizeOf()))
         self.blocks.append([i, blockFile])
 
-    def searchFile(self, path: str) -> Tuple[str, bool]:
+    def readFile(self, path: str) -> Tuple[str, bool]:
         dir = [i for i in path.split('/') if i != '']
-        return self.__searchFileInInodes(0, dir)
+        return self.__readFileInInodes(0, dir)
 
-    def __searchFileInInodes(self, i, path: List[str]) -> Tuple[str, bool]:
+    def __readFileInInodes(self, i, path: List[str]) -> Tuple[str, bool]:
         self.file.seek(self.superBlock.inode_start + i * InodesTable.sizeOf())
         inode: InodesTable = InodesTable.decode(self.file.read(InodesTable.sizeOf()))
         content = ''
@@ -97,22 +97,22 @@ class Tree:
         for p in range(len(inode.block)):
             if inode.block[p] != -1:
                 if inode.type == '0':
-                    content, founded = self.__searchFileInBlockFolder(inode.block[p], path)
+                    content, founded = self.__readFileInBlockFolder(inode.block[p], path)
                 else:
-                    content, founded = self.__searchFileInBlockFile(inode.block[p])
+                    content, founded = self.__readFileInBlockFile(inode.block[p])
         return content, founded
 
-    def __searchFileInBlockFolder(self, i, path: List[str]) -> Tuple[str, bool]:
+    def __readFileInBlockFolder(self, i, path: List[str]) -> Tuple[str, bool]:
         self.file.seek(self.superBlock.block_start + i * BlockFolder.sizeOf())
         blockFolder: BlockFolder = BlockFolder.decode(self.file.read(BlockFolder.sizeOf()))
         self.blocks.append([i, blockFolder])
         for p in range(len(blockFolder.content)):
             if not blockFolder.content[p].name.strip() in ['.', '..'] and blockFolder.content[p].inodo != -1 and blockFolder.content[p].name.strip() == path[0]:
                 path.pop(0)
-                return self.__searchFileInBlockFile(blockFolder.content[p].inodo)
+                return self.__readFileInBlockFile(blockFolder.content[p].inodo)
         return '', False
 
-    def __searchFileInBlockFile(self, i) -> Tuple[str, bool]:
+    def __readFileInBlockFile(self, i) -> Tuple[str, bool]:
         self.file.seek(self.superBlock.block_start + i * BlockFile.sizeOf())
         blockFile: BlockFile = BlockFile.decode(self.file.read(BlockFile.sizeOf()))
         return ''.join(blockFile.content), True

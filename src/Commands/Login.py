@@ -36,7 +36,7 @@ class Login:
                                 file.seek(mbr.partitions[i].start)
                                 superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
                                 tree: Tree = Tree(superBlock, file)
-                                content, founded = tree.searchFile('/users.txt')
+                                content, founded = tree.readFile('/users.txt')
                                 if founded:
                                     user: User = self.__isValidUser(content, self.params['user'], self.params['pass'])
                                     if user:
