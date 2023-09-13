@@ -13,6 +13,7 @@ class Tree:
         self.superBlock: SuperBlock = superBlock
         self.file: BufferedRandom = file
         self.blocks = []
+        self.fileBlocks = []
 
     def getDot(self, diskname, partName) -> str:
         dot: str = 'digraph Tree{\n\tnode [shape=plaintext];\n\trankdir=LR;\n\t'
@@ -99,7 +100,8 @@ class Tree:
                 if inode.type == '0':
                     content, founded = self.__readFileInBlockFolder(inode.block[p], path)
                 else:
-                    content, founded = self.__readFileInBlockFile(inode.block[p])
+                    cont, founded = self.__readFileInBlockFile(inode.block[p])
+                    content += cont
         return content, founded
 
     def __readFileInBlockFolder(self, i, path: List[str]) -> Tuple[str, bool]:
@@ -109,10 +111,50 @@ class Tree:
         for p in range(len(blockFolder.content)):
             if not blockFolder.content[p].name.strip() in ['.', '..'] and blockFolder.content[p].inodo != -1 and blockFolder.content[p].name.strip() == path[0]:
                 path.pop(0)
-                return self.__readFileInBlockFile(blockFolder.content[p].inodo)
+                return self.__readFileInInodes(blockFolder.content[p].inodo, path)
         return '', False
 
     def __readFileInBlockFile(self, i) -> Tuple[str, bool]:
         self.file.seek(self.superBlock.block_start + i * BlockFile.sizeOf())
         blockFile: BlockFile = BlockFile.decode(self.file.read(BlockFile.sizeOf()))
         return ''.join(blockFile.content), True
+
+    def writeFile(self, path: str, diskpath: str, grpname: str):
+        self.getFile(path)
+        if len(self.fileBlocks):
+            number, lastBlockFile = self.fileBlocks[len(self.fileBlocks) - 1][0], self.fileBlocks[len(self.fileBlocks) - 1][1]
+            contents = [[c for c in lastBlockFile.content if c != '']]
+
+            for _ in range(64):
+                pass
+        else:
+            pass
+
+    def getFile(self, path: str):
+        dir = [i for i in path.split('/') if i != '']
+        self.__getFileInInodes(0, dir)
+        return self.fileBlocks
+
+    def __getFileInInodes(self, i, path: List[str]) -> Tuple[str, bool]:
+        self.file.seek(self.superBlock.inode_start + i * InodesTable.sizeOf())
+        inode: InodesTable = InodesTable.decode(self.file.read(InodesTable.sizeOf()))
+        for p in range(len(inode.block)):
+            if inode.block[p] != -1:
+                if inode.type == '0':
+                    self.__getFileInBlockFolder(inode.block[p], path)
+                else:
+                    self.__getFileInBlockFile(inode.block[p])
+
+    def __getFileInBlockFolder(self, i, path: List[str]) -> Tuple[str, bool]:
+        self.file.seek(self.superBlock.block_start + i * BlockFolder.sizeOf())
+        blockFolder: BlockFolder = BlockFolder.decode(self.file.read(BlockFolder.sizeOf()))
+        self.blocks.append([i, blockFolder])
+        for p in range(len(blockFolder.content)):
+            if not blockFolder.content[p].name.strip() in ['.', '..'] and blockFolder.content[p].inodo != -1 and blockFolder.content[p].name.strip() == path[0]:
+                path.pop(0)
+                self.__getFileInInodes(blockFolder.content[p].inodo, path)
+
+    def __getFileInBlockFile(self, i) -> Tuple[str, bool]:
+        self.file.seek(self.superBlock.block_start + i * BlockFile.sizeOf())
+        blockFile: BlockFile = BlockFile.decode(self.file.read(BlockFile.sizeOf()))
+        self.fileBlocks.append([i, blockFile])

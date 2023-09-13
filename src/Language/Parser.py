@@ -8,6 +8,8 @@ from Commands.Unmount import Unmount
 from Commands.Mkfs import Mkfs
 from Commands.Login import Login
 from Commands.Logout import Logout
+from Commands.Mkgrp import Mkgrp
+from Commands.Rmgrp import Rmgrp
 from Commands.Pause import Pause
 from Commands.Rep import Rep
 
@@ -37,6 +39,8 @@ def p_COMMAND(t):
                 | LOGIN
                 | LOGOUT
                 | PAUSE
+                | MKGRP
+                | RMGRP
                 | REP
                 | COMMENTARY'''
     t[0] = t[1]
@@ -217,6 +221,31 @@ def p_LOGOUT(t):
     '''LOGOUT : RW_logout'''
     t[0] = Logout(t.lineno(1), t.lexpos(1))
     t[0].exec()
+
+def p_MKGRP(t):
+    '''MKGRP    : RW_mkgrp RW_name TK_equ TK_id
+                | RW_mkgrp'''
+    if len(t) != 2:
+        t[0] = Mkgrp(t.lineno(1), t.lexpos(1))
+        t[0].setParams({t[2][1:].lower().strip(): t[4]})
+        t[0].exec()
+    else:
+        t[0] = Mkgrp(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
+    
+
+def p_RMGRP(t):
+    '''RMGRP    : RW_rmgrp RW_name TK_equ TK_id
+                | RW_rmgrp'''
+    if len(t) != 2:
+        t[0] = Rmgrp(t.lineno(1), t.lexpos(1))
+        t[0].setParams(t[2])
+        t[0].exec()
+    else:
+        t[0] = Rmgrp(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
 
 def p_PAUSE(t):
     '''PAUSE : RW_pause'''
