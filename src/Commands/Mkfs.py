@@ -53,7 +53,7 @@ class Mkfs:
     def __ext2(self, absolutePath: str, partition: Partition):
         n: int = int(((partition.size - SuperBlock.sizeOf()) / (4 + InodesTable.sizeOf() + 3 * BlockFolder.sizeOf())) // 1)
         superBlock: SuperBlock = SuperBlock()
-        superBlock.filesystem_type = 2 if self.params['fs'] == '2fs' else 3
+        superBlock.filesystem_type = 2
         superBlock.inodes_count = n
         superBlock.blocks_count = 3 * n
         superBlock.free_inodes_count = n - 2
@@ -79,7 +79,7 @@ class Mkfs:
         blockFolder.content[1] = Content('..'.ljust(12), 0)
         blockFolder.content[2] = Content('users.txt'.ljust(12), 1)
 
-        userstxt: str = '1,G,root      \n1,U,root      ,root        ,123       \n'
+        userstxt: str = '1,G,root      \n1,U,root      ,root      ,123       \n'
         inode1: InodesTable = InodesTable(type = '1', size = len(userstxt), block = [-1 for i in range(15)], perm = 777)
         inode1.block[0] = 1
 
@@ -126,7 +126,7 @@ class Mkfs:
         blockFolder.content[1] = Content('..'.ljust(12), 0)
         blockFolder.content[2] = Content('users.txt'.ljust(12), 1)
 
-        userstxt: str = '1,G,root      \n1,U,root      ,root        ,123       \n'
+        userstxt: str = '1,G,root      \n1,U,root      ,root      ,123       \n'
         inode1: InodesTable = InodesTable(type = '1', size = len(userstxt), block = [-1 for i in range(15)], perm = 777)
         inode1.block[0] = 1
 

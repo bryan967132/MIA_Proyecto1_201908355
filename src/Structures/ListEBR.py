@@ -66,9 +66,9 @@ class ListEBR:
                 deleted = current.next.ebr
                 current.ebr.next = current.next.ebr.next
                 if current.next:
+                    if current.next.next:
+                        current.next.next.prev = current
                     current.next = current.next.next
-                if current.next.next:
-                    current.next.next.prev = current
                 return deleted
             current = current.next
         return None

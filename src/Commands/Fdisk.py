@@ -196,8 +196,11 @@ class Fdisk:
         with open(absolutePath, 'rb') as file:
             readed_bytes = file.read(127)
             mbr = MBR.decode(readed_bytes)
-            if self.__thereAreFour(mbr.partitions):
+            if self.params['type'] != 'L' and self.__thereAreFour(mbr.partitions):
                 self.__printError(f' -> Error fdisk: Ya existen 4 particiones en el disco {os.path.basename(absolutePath).split(".")[0]}.')
+                return
+            if self.__thereIsNameR(self.params['name'], mbr.partitions):
+                self.__printError(f' -> Error fdisk: Ya existe una partición con el nombre {self.params["name"]} en el disco {os.path.basename(absolutePath).split(".")[0]}.')
                 return
             self.params['fit'] = self.params['fit'][:1]
             if self.params['type'] == 'P' or self.params['type'] == 'E':
@@ -244,6 +247,9 @@ class Fdisk:
                 i = self.__getExtended(mbr.partitions)
                 if i != -1:
                     listEBR: ListEBR = self.__getListEBR(mbr.partitions[i].start, mbr.partitions[i].size, file)
+                    if self.__thereIsNameRL(self.params['name'], listEBR.getIterable()):
+                        self.__printError(f' -> Error fdisk: Ya existe una partición con el nombre {self.params["name"]} en el disco {os.path.basename(absolutePath).split(".")[0]}.')
+                        return
                     disponible = listEBR.searchEmptySpace(self.params['size'] * units)
                     if len(disponible) > 0:
                         if mbr.partitions[i].fit == 'B':
@@ -273,6 +279,18 @@ class Fdisk:
             if not i.status:
                 return False
         return True
+
+    def __thereIsNameR(self, name: str, partitions: List[Partition]) -> bool:
+        for i in partitions:
+            if i.status and i.name.strip() == name:
+                return True
+        return False
+
+    def __thereIsNameRL(self, name: str, partitions: List[EBR]) -> bool:
+        for i in partitions:
+            if i.status and i.name.strip() == name:
+                return True
+        return False
 
     def __getListEBR(self, start: int, size: int, file: BufferedRandom) -> ListEBR:
         listEBR: ListEBR = ListEBR(start, size)

@@ -124,7 +124,6 @@ def t_TK_id(t):
 def t_commentary(t):
     r'\#[^\r\n]*'
     t.value = re.sub(r'\#[ ]*', '', t.value)
-    t.lexer.lineno += 1
     return t
 
 t_ignore = " \t"
@@ -135,7 +134,7 @@ def t_newline(t):
 
 def t_error(t):
     errors.append(t.value[0])
-    print(f'Caracter no reconocido: {t.value[0]} en la linea {t.lexer.lineno}')
+    print(f"\033[31m -> Error Lexico: {t.value[0]} no reconocido. [{t.lexer.lineno}:{t.lexer.lexpos}]\033[0m")
     t.lexer.skip(1)
 
 def find_column(input, token):

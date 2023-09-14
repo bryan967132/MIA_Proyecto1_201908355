@@ -76,7 +76,7 @@ class Login:
         users: list[User] = []
         registers = [[j.strip() for j in i.split(',')] for i in content.split('\n') if i.strip() != '']
         for reg in registers:
-            if reg[1] == 'U':
+            if reg[1] == 'U' and reg[0] != '0':
                 users.append(User(reg[0], reg[2], reg[3], reg[4]))
         return users
 
