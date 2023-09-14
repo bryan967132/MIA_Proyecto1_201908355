@@ -30,7 +30,7 @@ class Mkusr:
                                             content, exists = tree.readFile('/users.txt')
                                             if exists:
                                                 users = tree.getUsers(content)
-                                                newUser: str = '{},U,{:<10},{:<10},{:<10}\n'.format(len(users) + 1, self.params['grp'], self.params['user'], self.params['pass'])
+                                                newUser: str = '{},U,{:<10},{:<10},{:<10}\n'.format(int(users[-1].id) + 1, self.params['grp'], self.params['user'], self.params['pass'])
                                                 tree.writeFile('/users.txt', currentLogged['PathDisk'], mbr.partitions[i].start, newUser)
                                                 if superBlock.filesystem_type == 3:
                                                     file.seek(mbr.partitions[i].start + SuperBlock.sizeOf())

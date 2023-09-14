@@ -28,7 +28,7 @@ class Mkgrp:
                                     content, exists = tree.readFile('/users.txt')
                                     if exists:
                                         groups = tree.getGroups(content)
-                                        newGroup: str = '{},G,{:<10}\n'.format(len(groups) + 1, self.params['name'])
+                                        newGroup: str = '{},G,{:<10}\n'.format(int(groups[-1].id) + 1, self.params['name'])
                                         tree.writeFile('/users.txt', currentLogged['PathDisk'], mbr.partitions[i].start, newGroup)
                                         if superBlock.filesystem_type == 3:
                                             file.seek(mbr.partitions[i].start + SuperBlock.sizeOf())
