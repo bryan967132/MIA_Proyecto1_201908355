@@ -5,8 +5,11 @@ from Structures.BlockFolder import *
 from Structures.BlockFile import *
 from Structures.BlockPointers import *
 from Structures.Journal import *
+from Structures.User import *
+from Structures.Group import *
 from io import BufferedRandom
 from typing import List, Tuple
+import math
 
 class Tree:
     def __init__(self, superBlock: SuperBlock, file: BufferedRandom):
@@ -14,6 +17,8 @@ class Tree:
         self.file: BufferedRandom = file
         self.blocks = []
         self.fileBlocks = []
+
+# ============================== GRAPH TREE ================================
 
     def getDot(self, diskname, partName) -> str:
         dot: str = 'digraph Tree{\n\tnode [shape=plaintext];\n\trankdir=LR;\n\t'
@@ -28,13 +33,34 @@ class Tree:
         dot = inode.getDot(i)
         for p in range(len(inode.block)):
             if inode.block[p] != -1:
-                if inode.type == '0':
-                    dot += '\n\t' + self.__getDotBlockFolder(inode.block[p])
-                    dot += f'\n\tinode{i}:A{p} -> block{inode.block[p]}:B{inode.block[p]};'
-                else:
-                    dot += '\n\t' + self.__getDotBlockFile(inode.block[p])
-                    dot += f'\n\tinode{i}:A{p} -> block{inode.block[p]}:B{inode.block[p]};'
+                if p < 12:
+                    if inode.type == '0':
+                        dot += '\n\t' + self.__getDotBlockFolder(inode.block[p])
+                    else:
+                        dot += '\n\t' + self.__getDotBlockFile(inode.block[p])
+                elif p == 12:
+                    dot += '\n\t' + self.__getDotBlockPointers(inode.block[p], inode.type, 1)
+                elif p == 13:
+                    dot += '\n\t' + self.__getDotBlockPointers(inode.block[p], inode.type, 2)
+                elif p == 14:
+                    dot += '\n\t' + self.__getDotBlockPointers(inode.block[p], inode.type, 3)
+                dot += f'\n\tinode{i}:A{p} -> block{inode.block[p]}:B{inode.block[p]};'
+        return dot
 
+    def __getDotBlockPointers(self, i: int, inodeType: str, simplicity: int) -> str:
+        self.file.seek(self.superBlock.block_start + i * BlockPointers.sizeOf())
+        blockPointers: BlockPointers = BlockPointers.decode(self.file.read(BlockPointers.sizeOf()))
+        dot = blockPointers.getDot(i)
+        for p in range(len(blockPointers.pointers)):
+            if blockPointers.pointers[p] != -1:
+                if simplicity == 1:
+                    if inodeType == '0':
+                        dot += '\n\t' + self.__getDotBlockFile(blockPointers.pointers[p])
+                    else:
+                        dot += '\n\t' + self.__getDotBlockFile(blockPointers.pointers[p])                        
+                else:
+                    dot += '\n\t' + self.__getDotBlockPointers(blockPointers.pointers[p], inodeType, simplicity - 1)
+                dot += f'\n\tblock{i}:A{p} -> block{blockPointers.pointers[p]}:B{blockPointers.pointers[p]};'
         return dot
 
     def __getDotBlockFolder(self, i) -> str:
@@ -51,6 +77,8 @@ class Tree:
         self.file.seek(self.superBlock.block_start + i * BlockFile.sizeOf())
         blockFile: BlockFile = BlockFile.decode(self.file.read(BlockFile.sizeOf()))
         return blockFile.getDot(i)
+
+# =================================== GET BLOCKS ==================================
 
     def getBlocks(self):
         self.__searchInInodes(0)
@@ -86,6 +114,8 @@ class Tree:
         blockFile: BlockFile = BlockFile.decode(self.file.read(BlockFile.sizeOf()))
         self.blocks.append([i, blockFile])
 
+# ================================== READ CONTENT ==================================
+
     def readFile(self, path: str) -> Tuple[str, bool]:
         dir = [i for i in path.split('/') if i != '']
         return self.__readFileInInodes(0, dir)
@@ -119,42 +149,113 @@ class Tree:
         blockFile: BlockFile = BlockFile.decode(self.file.read(BlockFile.sizeOf()))
         return ''.join(blockFile.content), True
 
-    def writeFile(self, path: str, diskpath: str, grpname: str):
-        self.getFile(path)
-        if len(self.fileBlocks):
-            number, lastBlockFile = self.fileBlocks[len(self.fileBlocks) - 1][0], self.fileBlocks[len(self.fileBlocks) - 1][1]
-            contents = [[c for c in lastBlockFile.content if c != '']]
+# ================================= WRITE FILE ===================================
 
-            for _ in range(64):
-                pass
-        else:
-            pass
-
-    def getFile(self, path: str):
+    def writeFile(self, path: str, diskpath: str, partstart: int, newContent: str):
         dir = [i for i in path.split('/') if i != '']
-        self.__getFileInInodes(0, dir)
-        return self.fileBlocks
+        self.__writeGrpFileInInodes(0, dir, diskpath, newContent, partstart)
 
-    def __getFileInInodes(self, i, path: List[str]) -> Tuple[str, bool]:
+    def __writeGrpFileInInodes(self, i: int, path: List[str], pathdsk, newContent: str, partstart: int):
         self.file.seek(self.superBlock.inode_start + i * InodesTable.sizeOf())
         inode: InodesTable = InodesTable.decode(self.file.read(InodesTable.sizeOf()))
-        for p in range(len(inode.block)):
-            if inode.block[p] != -1:
-                if inode.type == '0':
-                    self.__getFileInBlockFolder(inode.block[p], path)
+        if inode.type == '0':
+            for p in range(len(inode.block)):
+                if inode.block[p] != -1:
+                    self.__writeFileInBlockFolder(inode.block[p], path, pathdsk, newContent, partstart)
+        else:
+            blocksFile: Tuple[int, BlockFile]
+            for p in range(len(inode.block)):
+                if inode.block[p] != -1:
+                    blocksFile = self.__writeFileInBlockFile(inode.block[p])
+            num, block = blocksFile
+            contents = [[r for r in block.content if r != '']]
+            for z in newContent:
+                if len(contents[-1]) < 64:
+                    contents[-1].append(z)
                 else:
-                    self.__getFileInBlockFile(inode.block[p])
+                    contents.append([z])
+            block.content = contents.pop(0)
+            self.__writeInDisk(pathdsk, self.superBlock.block_start + num * BlockFile.sizeOf(), block.encode())
+            newSizeInode = (num - 1) * 64 + len(block.content)
+            while len(contents) > 0:
+                newBlock: BlockFile = BlockFile(['' for i in range(64)])
+                contenew = contents.pop(0)
+                newSizeInode = (num - 1) * 64 + len(contenew)
+                if len(newBlock.content) == len(contenew):
+                    newBlock.content = contenew
+                else:
+                    for h in range(len(contenew)):
+                        newBlock.content[h] = contenew[h]
+                nextFreeBitBlock = self.__findNextFreeBlock(1)
+                for h in range(len(inode.block)):
+                    if inode.block[h] == -1:
+                        inode.block[h] = nextFreeBitBlock[0]
+                        self.__writeInDisk(pathdsk, self.superBlock.bm_block_start + nextFreeBitBlock[0], b'1')
+                        self.__writeInDisk(pathdsk, self.superBlock.block_start + nextFreeBitBlock[0] * BlockFile.sizeOf(), newBlock.encode())
+                        self.superBlock.first_blo = self.__findNextFreeBlock(1)[0]
+                        self.superBlock.free_blocks_count -= 1
+                        self.__writeInDisk(pathdsk, partstart, self.superBlock.encode())
+                        break
+            inode.size = newSizeInode
+            self.__writeInDisk(pathdsk, self.superBlock.inode_start + i * InodesTable.sizeOf(), inode.encode())
 
-    def __getFileInBlockFolder(self, i, path: List[str]) -> Tuple[str, bool]:
+    def __writeFileInBlockFolder(self, i, path: List[str], pathdsk, content: str, partstart: int):
         self.file.seek(self.superBlock.block_start + i * BlockFolder.sizeOf())
         blockFolder: BlockFolder = BlockFolder.decode(self.file.read(BlockFolder.sizeOf()))
         self.blocks.append([i, blockFolder])
         for p in range(len(blockFolder.content)):
             if not blockFolder.content[p].name.strip() in ['.', '..'] and blockFolder.content[p].inodo != -1 and blockFolder.content[p].name.strip() == path[0]:
                 path.pop(0)
-                self.__getFileInInodes(blockFolder.content[p].inodo, path)
+                self.__writeGrpFileInInodes(blockFolder.content[p].inodo, path, pathdsk, content, partstart)
 
-    def __getFileInBlockFile(self, i) -> Tuple[str, bool]:
+    def __writeFileInBlockFile(self, i) -> Tuple[int, BlockFile]:
         self.file.seek(self.superBlock.block_start + i * BlockFile.sizeOf())
         blockFile: BlockFile = BlockFile.decode(self.file.read(BlockFile.sizeOf()))
-        self.fileBlocks.append([i, blockFile])
+        return i, blockFile
+
+    def __findNextFreeInode(self, count: int):
+        self.file.seek(self.superBlock.bm_block_start)
+        bm_block = self.file.read(self.superBlock.blocks_count).decode('utf-8')
+        freeBlocks = []
+        for i in range(len(bm_block)):
+            if len(freeBlocks) == count:
+                break
+            if bm_block[i] == '0':
+                freeBlocks.append(i)
+        return freeBlocks
+
+    def __findNextFreeBlock(self, count: int):
+        self.file.seek(self.superBlock.bm_block_start)
+        bm_block = self.file.read(self.superBlock.blocks_count).decode('utf-8')
+        freeBlocks = []
+        for i in range(len(bm_block)):
+            if len(freeBlocks) == count:
+                break
+            if bm_block[i] == '0':
+                freeBlocks.append(i)
+        return freeBlocks
+
+# =========================================USERS AND GROUPS===============================================
+
+    def getUsers(self, content) -> List[User]:
+        users: list[User] = []
+        registers = [[j.strip() for j in i.split(',')] for i in content.split('\n') if i.strip() != '']
+        for reg in registers:
+            if reg[1] == 'U' and reg[0] != '0':
+                users.append(User(reg[0], reg[2], reg[3], reg[4]))
+        return users
+
+    def getGroups(self, content) -> List[Group]:
+        users: list[Group] = []
+        registers = [[j.strip() for j in i.split(',')] for i in content.split('\n') if i.strip() != '']
+        for reg in registers:
+            if reg[1] == 'G' and reg[0] != '0':
+                users.append(Group(reg[0], reg[2]))
+        return users
+
+# ==========================================WRITE IN DISK=================================================
+
+    def __writeInDisk(self, path: str, seek: int, content: bytes):
+        with open(path, 'r+b') as file:
+            file.seek(seek)
+            file.write(content)

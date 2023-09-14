@@ -10,6 +10,8 @@ from Commands.Login import Login
 from Commands.Logout import Logout
 from Commands.Mkgrp import Mkgrp
 from Commands.Rmgrp import Rmgrp
+from Commands.Mkusr import Mkusr
+from Commands.Rmusr import Rmusr
 from Commands.Pause import Pause
 from Commands.Rep import Rep
 
@@ -38,9 +40,11 @@ def p_COMMAND(t):
                 | MKFS
                 | LOGIN
                 | LOGOUT
-                | PAUSE
                 | MKGRP
                 | RMGRP
+                | MKUSR
+                | RMUSR
+                | PAUSE
                 | REP
                 | COMMENTARY'''
     t[0] = t[1]
@@ -240,10 +244,50 @@ def p_RMGRP(t):
                 | RW_rmgrp'''
     if len(t) != 2:
         t[0] = Rmgrp(t.lineno(1), t.lexpos(1))
-        t[0].setParams(t[2])
+        t[0].setParams({t[2][1:].lower().strip(): t[4]})
         t[0].exec()
     else:
         t[0] = Rmgrp(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
+
+
+def p_MKUSR(t):
+    '''MKUSR    : RW_mkusr MKUSERPARAMS
+                | RW_mkusr'''
+    if len(t) != 2:
+        t[0] = Mkusr(t.lineno(1), t.lexpos(1))
+        t[0].setParams(t[2])
+        t[0].exec()
+    else:
+        t[0] = Mkusr(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
+
+def p_MKUSERPARAMS(t):
+    '''MKUSERPARAMS : MKUSERPARAMS MKUSERPARAM
+                    | MKUSERPARAM'''
+    if len(t) != 2:
+        t[1][t[2][0]] = t[2][1]
+        t[0] = t[1]
+    else:
+        t[0] = {t[1][0]: t[1][1]}
+
+def p_MKUSERPARAM(t):
+    '''MKUSERPARAM  : RW_user TK_equ TK_id
+                    | RW_pass TK_equ TK_id
+                    | RW_grp  TK_equ TK_id'''
+    t[0] = [t[1][1:].lower().strip(), t[3]]
+
+def p_RMUSR(t):
+    '''RMUSR    : RW_rmusr RW_user TK_equ TK_id
+                | RW_rmusr'''
+    if len(t) != 2:
+        t[0] = Rmusr(t.lineno(1), t.lexpos(1))
+        t[0].setParams({t[2][1:].lower().strip(): t[4]})
+        t[0].exec()
+    else:
+        t[0] = Rmusr(t.lineno(1), t.lexpos(1))
         t[0].setParams({})
         t[0].exec()
 
