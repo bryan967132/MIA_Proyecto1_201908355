@@ -19,5 +19,16 @@ class BlockPointers:
     def sizeOf():
         return len(BlockPointers().encode())
 
+    def getDot(self, i):
+        pointers = ''
+        for p in range(len(self.pointers)):
+            pointers += f'''
+                <TR><TD PORT="A{p}">{self.pointers[p]}</TD></TR>'''
+        return f'''block0[label=<
+        <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD BGCOLOR="#FFCB97" PORT="B{i}">Bloque {i}</TD></TR>{pointers}
+        </TABLE>
+    >];'''
+
     def __str__(self) -> str:
         return f'pointers: {self.pointers}\n'
