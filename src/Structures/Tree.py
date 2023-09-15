@@ -199,7 +199,6 @@ class Tree:
         self.file.seek(self.superBlock.block_start + i * BlockFolder.sizeOf())
         blockFolder: BlockFolder = BlockFolder.decode(self.file.read(BlockFolder.sizeOf()))
         for p in range(len(blockFolder.content)):
-            print(blockFolder.content[p].name.strip(), path)
             if not blockFolder.content[p].name.strip() in ['.', '..'] and blockFolder.content[p].inodo != -1 and blockFolder.content[p].name.strip() == path[0]:
                 path.pop(0)
                 return self.__readFileInInodes(blockFolder.content[p].inodo, path)
