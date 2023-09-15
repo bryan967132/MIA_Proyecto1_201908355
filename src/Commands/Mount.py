@@ -18,6 +18,9 @@ class Mount:
         if self.__validateParams():
             self.__mount()
             return
+        elif self.__validateEmptyParams():
+            self.__viewMounteds()
+            return
         else:
             self.__printError(' -> Error mount: Faltan parámetros obligatorios para montar la partición')
             return
@@ -86,6 +89,22 @@ class Mount:
         if 'path' in self.params and 'name' in self.params:
             return True
         return False
+
+    def __validateEmptyParams(self):
+        if len(self.params) == 0:
+            return True
+        return False
+
+    def __viewMounteds(self):
+        if len(disks) > 0:
+            print(f'\033[33m -> mount: \033[0m')
+            print(f'\033[33m\t -> Particiones Montadas\033[0m')
+            for k, v in disks.items():
+                for k1, v1 in v['ids'].items():
+                    print('\033[53m\t -> {:<20} {:<20} {:<20}\033[0m'.format(k1, v1, k))
+            print()
+        else:
+            print(f'\033[33m -> mount: No hay particiones montadas: \033[0m')
 
     def __printError(self, text):
         print(f"\033[31m{text} [{self.line}:{self.column}]\033[0m")
