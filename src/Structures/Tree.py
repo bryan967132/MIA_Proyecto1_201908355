@@ -183,22 +183,23 @@ class Tree:
             if blockPointers.pointers[p] != -1:
                 if simplicity == 1:
                     if inodeType == '0':
-                        cont, founded = self.__readFileInBlockFile(blockPointers.pointers[p])
-                        content += cont
+                        content, founded = self.__readFileInBlockFile(blockPointers.pointers[p])
                     else:
-                        content, founded = self.__readFileInBlockFolder(blockPointers.pointers[p], path)
+                        cont, founded = self.__readFileInBlockFolder(blockPointers.pointers[p], path)
+                        content += cont
                 else:
                     if inodeType == '0':
-                        cont, founded = self.__readFileInBlockPointers(blockPointers.pointers[p], path, inodeType, simplicity - 1)
-                        content += cont
+                        content, founded = self.__readFileInBlockPointers(blockPointers.pointers[p], path, inodeType, simplicity - 1)
                     else:
                         cont, founded = self.__readFileInBlockPointers(blockPointers.pointers[p], path, inodeType, simplicity - 1)
+                        content += cont
         return content, founded
 
     def __readFileInBlockFolder(self, i, path: List[str]) -> Tuple[str, bool]:
         self.file.seek(self.superBlock.block_start + i * BlockFolder.sizeOf())
         blockFolder: BlockFolder = BlockFolder.decode(self.file.read(BlockFolder.sizeOf()))
         for p in range(len(blockFolder.content)):
+            print(blockFolder.content[p].name.strip(), path)
             if not blockFolder.content[p].name.strip() in ['.', '..'] and blockFolder.content[p].inodo != -1 and blockFolder.content[p].name.strip() == path[0]:
                 path.pop(0)
                 return self.__readFileInInodes(blockFolder.content[p].inodo, path)
@@ -226,7 +227,14 @@ class Tree:
             blocksFile: Tuple[int, BlockFile]
             for p in range(len(inode.block)):
                 if inode.block[p] != -1:
-                    blocksFile = self.__writeFileInBlockFile(inode.block[p])
+                    if p < 12:
+                        blocksFile = self.__writeFileInBlockFile(inode.block[p])
+                    elif p == 12:
+                        blocksFile = self.__writeFileInBlockPointers3(pathdsk, inode.block[p], 1)
+                    elif p == 13:
+                        blocksFile = self.__writeFileInBlockPointers3(pathdsk, inode.block[p], 2)
+                    elif p == 14:
+                        blocksFile = self.__writeFileInBlockPointers3(pathdsk, inode.block[p], 3)
             num, block = blocksFile
             contents = [[r for r in block.content if r != '']]
             for z in newContent:
@@ -299,6 +307,10 @@ class Tree:
                     else:
                         self.__writeFileInBlockPointers(pathdsk, newBlockFile, self.__findNextFreeBlock(1)[0], simplicity - 1)
                         return
+
+    def __writeFileInBlockPointers3(self, pathdsk, i: int, simplicity: int) -> Tuple[int, BlockFile]:
+        self.file.seek(self.superBlock.block_start + i * BlockPointers.sizeOf())
+        print(self.readFile(BlockPointers.sizeOf()))
 
     def __writeFileInBlockFolder(self, i, path: List[str], pathdsk, content: str, partstart: int):
         self.file.seek(self.superBlock.block_start + i * BlockFolder.sizeOf())
