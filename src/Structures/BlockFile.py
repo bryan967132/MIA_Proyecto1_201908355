@@ -33,7 +33,6 @@ class BlockFile:
             content += self.content[r].replace('\n', '\\n').replace('\"', '\\\"').replace('\'', '\\\'')
             if r % 8 == 7:
                 content += '<BR/>'
-        # content = ''.join(self.content).replace('\n', '\\n').replace('\"', '\\\"').replace('\'', '\\\'')
         return f'''\n\tn{i}[label = <<TABLE BORDER="0">
         <TR><TD>Bloque Archivo {i}</TD></TR>
         <TR><TD><FONT FACE="Consolas">{content}</FONT></TD></TR>

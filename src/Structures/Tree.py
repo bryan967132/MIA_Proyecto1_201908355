@@ -96,10 +96,31 @@ class Tree:
         inode: InodesTable = InodesTable.decode(self.file.read(InodesTable.sizeOf()))
         for p in range(len(inode.block)):
             if inode.block[p] != -1:
-                if inode.type == '0':
-                    self.__searchInBlockFolder(inode.block[p])
+                if p < 12:
+                    if inode.type == '0':
+                        self.__searchInBlockFolder(inode.block[p])
+                    else:
+                        self.__searchInBlockFile(inode.block[p])
+                elif p == 12:
+                    self.__searchInBlockPointers(inode.block[p], inode.type, 1)
+                elif p == 13:
+                    self.__searchInBlockPointers(inode.block[p], inode.type, 2)
+                elif p == 14:
+                    self.__searchInBlockPointers(inode.block[p], inode.type, 3)
+
+    def __searchInBlockPointers(self, i, inodeType, simplicity):
+        self.file.seek(self.superBlock.block_start + i * BlockPointers.sizeOf())
+        blockPointers: BlockPointers = BlockPointers.decode(self.file.read(BlockPointers.sizeOf()))
+        self.blocks.append([i, blockPointers])
+        for p in range(len(blockPointers.pointers)):
+            if blockPointers.pointers[p] != -1:
+                if simplicity == 1:
+                    if inodeType == '0':
+                        self.__searchInBlockFolder(blockPointers.pointers[p])
+                    else:
+                        self.__searchInBlockFile(blockPointers.pointers[p])
                 else:
-                    self.__searchInBlockFile(inode.block[p])
+                    self.__searchInBlockPointers(blockPointers.pointers[p], inodeType, simplicity - 1)
 
     def __searchInBlockFolder(self, i):
         self.file.seek(self.superBlock.block_start + i * BlockFolder.sizeOf())
@@ -127,17 +148,56 @@ class Tree:
         founded = False
         for p in range(len(inode.block)):
             if inode.block[p] != -1:
-                if inode.type == '0':
-                    content, founded = self.__readFileInBlockFolder(inode.block[p], path)
+                if p < 12:
+                    if inode.type == '0':
+                        content, founded = self.__readFileInBlockFolder(inode.block[p], path)
+                    else:
+                        cont, founded = self.__readFileInBlockFile(inode.block[p])
+                        content += cont
+                elif p == 12:
+                    if inode.type == '0':
+                        content, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 1)
+                    else:
+                        cont, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 1)
+                        content += cont
+                elif p == 13:
+                    if inode.type == '0':
+                        content, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 2)
+                    else:
+                        cont, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 2)
+                        content += cont
+                elif p == 14:
+                    if inode.type == '0':
+                        content, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 3)
+                    else:
+                        cont, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 3)
+                        content += cont
+        return content, founded
+
+    def __readFileInBlockPointers(self, i, path: List[str], inodeType, simplicity) -> Tuple[str, bool]:
+        self.file.seek(self.superBlock.block_start + i * BlockPointers.sizeOf())
+        blockPointers: BlockPointers = BlockPointers.decode(self.file.read(BlockPointers.sizeOf()))
+        content = ''
+        founded = False
+        for p in range(len(blockPointers.pointers)):
+            if blockPointers.pointers[p] != -1:
+                if simplicity == 1:
+                    if inodeType == '0':
+                        cont, founded = self.__readFileInBlockFile(blockPointers.pointers[p])
+                        content += cont
+                    else:
+                        content, founded = self.__readFileInBlockFolder(blockPointers.pointers[p], path)
                 else:
-                    cont, founded = self.__readFileInBlockFile(inode.block[p])
-                    content += cont
+                    if inodeType == '0':
+                        cont, founded = self.__readFileInBlockPointers(blockPointers.pointers[p], path, inodeType, simplicity - 1)
+                        content += cont
+                    else:
+                        cont, founded = self.__readFileInBlockPointers(blockPointers.pointers[p], path, inodeType, simplicity - 1)
         return content, founded
 
     def __readFileInBlockFolder(self, i, path: List[str]) -> Tuple[str, bool]:
         self.file.seek(self.superBlock.block_start + i * BlockFolder.sizeOf())
         blockFolder: BlockFolder = BlockFolder.decode(self.file.read(BlockFolder.sizeOf()))
-        self.blocks.append([i, blockFolder])
         for p in range(len(blockFolder.content)):
             if not blockFolder.content[p].name.strip() in ['.', '..'] and blockFolder.content[p].inodo != -1 and blockFolder.content[p].name.strip() == path[0]:
                 path.pop(0)
@@ -153,9 +213,9 @@ class Tree:
 
     def writeFile(self, path: str, diskpath: str, partstart: int, newContent: str):
         dir = [i for i in path.split('/') if i != '']
-        self.__writeGrpFileInInodes(0, dir, diskpath, newContent, partstart)
+        self.__writeFileInInodes(0, dir, diskpath, newContent, partstart)
 
-    def __writeGrpFileInInodes(self, i: int, path: List[str], pathdsk, newContent: str, partstart: int):
+    def __writeFileInInodes(self, i: int, path: List[str], pathdsk, newContent: str, partstart: int):
         self.file.seek(self.superBlock.inode_start + i * InodesTable.sizeOf())
         inode: InodesTable = InodesTable.decode(self.file.read(InodesTable.sizeOf()))
         if inode.type == '0':
@@ -189,24 +249,64 @@ class Tree:
                 nextFreeBitBlock = self.__findNextFreeBlock(1)
                 for h in range(len(inode.block)):
                     if inode.block[h] == -1:
-                        inode.block[h] = nextFreeBitBlock[0]
-                        self.__writeInDisk(pathdsk, self.superBlock.bm_block_start + nextFreeBitBlock[0], b'1')
-                        self.__writeInDisk(pathdsk, self.superBlock.block_start + nextFreeBitBlock[0] * BlockFile.sizeOf(), newBlock.encode())
-                        self.superBlock.first_blo = self.__findNextFreeBlock(1)[0]
-                        self.superBlock.free_blocks_count -= 1
-                        self.__writeInDisk(pathdsk, partstart, self.superBlock.encode())
+                        if h < 12:
+                            inode.block[h] = nextFreeBitBlock[0]
+                            self.__writeInDisk(pathdsk, self.superBlock.bm_block_start + nextFreeBitBlock[0], b'1')
+                            self.__writeInDisk(pathdsk, self.superBlock.block_start + nextFreeBitBlock[0] * BlockFile.sizeOf(), newBlock.encode())
+                            self.superBlock.first_blo = self.__findNextFreeBlock(1)[0]
+                            self.superBlock.free_blocks_count -= 1
+                            self.__writeInDisk(pathdsk, partstart, self.superBlock.encode())
+                        elif h == 12:
+                            inode.block[h] = nextFreeBitBlock[0]
+                            self.__writeFileInBlockPointers(pathdsk, newBlock, nextFreeBitBlock[0], 1)
+                            self.superBlock.free_blocks_count -= 1
+                            self.__writeInDisk(pathdsk, partstart, self.superBlock.encode())
+                        elif h == 13:
+                            pass
+                        elif h == 14:
+                            pass
                         break
             inode.size = newSizeInode
             self.__writeInDisk(pathdsk, self.superBlock.inode_start + i * InodesTable.sizeOf(), inode.encode())
 
+    def __writeFileInBlockPointers(self, pathdsk, newBlockFile: BlockFile, nextFreeBitBlock: int, simplicity: int):
+        with open(pathdsk, 'rb') as file:
+            file.seek(self.superBlock.block_start + nextFreeBitBlock * BlockPointers.sizeOf())
+            readed_bytes = file.read(BlockPointers.sizeOf())
+            if readed_bytes != b'\x00' * BlockPointers.sizeOf():
+                print('YA EXISTE')
+            else:
+                blockPointers: BlockPointers = BlockPointers([-1 for i in range(16)])
+                self.__writeInDisk(pathdsk, self.superBlock.bm_block_start + nextFreeBitBlock, b'1')
+                self.__writeInDisk(pathdsk, self.superBlock.block_start + nextFreeBitBlock * BlockPointers.sizeOf(), blockPointers.encode())
+                self.superBlock.free_blocks_count -= 1
+                self.__writeFileInBlockPointers2(pathdsk, newBlockFile, nextFreeBitBlock, simplicity)
+
+    def __writeFileInBlockPointers2(self, pathdsk, newBlockFile: BlockFile, nextFreeBitBlock: int, simplicity: int):
+        with open(pathdsk, 'rb') as file:
+            file.seek(self.superBlock.block_start + nextFreeBitBlock * BlockPointers.sizeOf())
+            blockPointers: BlockPointers = BlockPointers.decode(file.read(BlockPointers.sizeOf()))
+            for p in range(len(blockPointers.pointers)):
+                if blockPointers.pointers[p] == -1:
+                    if simplicity == 1:
+                        newNextBit = self.__findNextFreeBlock(1)[0]
+                        blockPointers.pointers[p] = newNextBit
+                        self.__writeInDisk(pathdsk, self.superBlock.block_start + nextFreeBitBlock * BlockPointers.sizeOf(), blockPointers.encode())
+                        self.__writeInDisk(pathdsk, self.superBlock.block_start + newNextBit * BlockFile.sizeOf(), newBlockFile.encode())
+                        self.__writeInDisk(pathdsk, self.superBlock.bm_block_start + newNextBit, b'1')
+                        self.superBlock.free_blocks_count -= 1
+                        return
+                    else:
+                        self.__writeFileInBlockPointers(pathdsk, newBlockFile, self.__findNextFreeBlock(1)[0], simplicity - 1)
+                        return
+
     def __writeFileInBlockFolder(self, i, path: List[str], pathdsk, content: str, partstart: int):
         self.file.seek(self.superBlock.block_start + i * BlockFolder.sizeOf())
         blockFolder: BlockFolder = BlockFolder.decode(self.file.read(BlockFolder.sizeOf()))
-        self.blocks.append([i, blockFolder])
         for p in range(len(blockFolder.content)):
             if not blockFolder.content[p].name.strip() in ['.', '..'] and blockFolder.content[p].inodo != -1 and blockFolder.content[p].name.strip() == path[0]:
                 path.pop(0)
-                self.__writeGrpFileInInodes(blockFolder.content[p].inodo, path, pathdsk, content, partstart)
+                self.__writeFileInInodes(blockFolder.content[p].inodo, path, pathdsk, content, partstart)
 
     def __writeFileInBlockFile(self, i) -> Tuple[int, BlockFile]:
         self.file.seek(self.superBlock.block_start + i * BlockFile.sizeOf())

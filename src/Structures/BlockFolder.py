@@ -25,7 +25,7 @@ class BlockFolder:
         for p in range(len(self.content)):
             pointers += f'''
                 <TR><TD>{self.content[p].name.strip()}</TD><TD PORT="A{p}">{self.content[p].inodo}</TD></TR>'''
-        return f'''block0[label=<
+        return f'''block{i}[label=<
         <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
             <TR><TD COLSPAN="2" BGCOLOR="#D1BCD2" PORT="B{i}">Bloque {i}</TD></TR>{pointers}
         </TABLE>
