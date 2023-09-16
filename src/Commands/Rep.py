@@ -53,6 +53,9 @@ class Rep:
         if self.params['name'].lower() == 'sb':
             self.__reportSb()
             return
+        if not 'ruta' in self.params:
+            self.__printError(' -> Error rep: Faltan parámetros obligatorios para generar el reporte.')
+            return
         if self.params['name'].lower() == 'file':
             self.__reportFile()
             return
@@ -430,7 +433,31 @@ class Rep:
             self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
 
     def __reportFile(self):
-        pass
+        match = re.match(r'(\d+)([a-zA-Z]+\d*)', self.params['id'])
+        if match.group(2) in disks:
+            if self.params['id'] in disks[match.group(2)]['ids']:
+                absolutePath = disks[match.group(2)]['path']
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                with open(absolutePath, 'rb') as file:
+                    readed_bytes = file.read(127)
+                    mbr = MBR.decode(readed_bytes)
+                    for i in range(len(mbr.partitions)):
+                        if mbr.partitions[i].status and mbr.partitions[i].name.strip() == namePartition:
+                            file.seek(mbr.partitions[i].start)
+                            superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
+                            tree: Tree = Tree(superBlock, file)
+                            content, founded = tree.readFile(self.params['ruta'])
+                            if founded:
+                                with open(self.params['path'], 'w') as file:
+                                    file.write(content)
+                                self.__printSuccess(self.params['name'].lower(), f'({namePartition}: {match.group(2)})')
+                            else:
+                                self.__printError(f' -> Error rep: No existe el archivo /users.txt.')
+                            return
+            else:
+                self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} en el disco {match.group(2)} para iniciar sesión.')
+        else:
+            self.__printError(f' -> Error rep: No existe el disco {match.group(2)}.')
 
     def __reportLs(self):
         pass
