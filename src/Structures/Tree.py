@@ -422,6 +422,14 @@ class Tree:
         blockFile: BlockFile = BlockFile.decode(self.file.read(BlockFile.sizeOf()))
         return i, blockFile
 
+# =========================================== WRITE FILE =============================================
+
+    def mkdir(self, path: str):
+        dir = [i for i in path.split('/') if i != '']
+        print(dir)
+
+    #def __mkdirInInode(self,)
+
 # ========================================= FIND NEXT BIT =============================================
 
     def __findNextFreeInode(self, count: int):

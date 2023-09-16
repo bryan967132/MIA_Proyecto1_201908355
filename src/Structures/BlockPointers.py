@@ -25,10 +25,10 @@ class BlockPointers:
             pointers += f'''
                 <TR><TD PORT="A{p}">{self.pointers[p]}</TD></TR>'''
         return f'''block{i}[label=<
-        <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-            <TR><TD BGCOLOR="#FFCB97" PORT="B{i}">Bloque {i}</TD></TR>{pointers}
-        </TABLE>
-    >];'''
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+                <TR><TD BGCOLOR="#FFCB97" PORT="B{i}">Bloque {i}</TD></TR>{pointers}
+            </TABLE>
+        >];'''
 
     def getDotB(self, i):
         content = ''

@@ -66,11 +66,9 @@ class InodesTable:
     def getDot(self, i) -> str:
         apuntadores: str = ''
         for p in range(12):
-            apuntadores += f'''
-            <TR><TD>apt{p + 1}</TD><TD port="A{p}">{self.block[p]}</TD></TR>'''
+            apuntadores += f'''\n\t\t\t<TR><TD>apt{p + 1}</TD><TD port="A{p}">{self.block[p]}</TD></TR>'''
         for p in range(12, 15):
-            apuntadores += f'''
-			<TR><TD BGCOLOR="#FFBBB1">apt{p + 1}</TD><TD port="A{p}">{self.block[p]}</TD></TR>'''
+            apuntadores += f'''\n\t\t\t<TR><TD BGCOLOR="#FFBBB1">apt{p + 1}</TD><TD port="A{p}">{self.block[p]}</TD></TR>'''
         
         return f'''inode{i}[label=<
 		<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
