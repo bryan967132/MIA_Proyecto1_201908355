@@ -54,8 +54,10 @@ class Rep:
             self.__reportSb()
             return
         if self.params['name'].lower() == 'file':
+            self.__reportFile()
             return
         if self.params['name'].lower() == 'ls':
+            self.__reportLs()
             return
 
     def __reportMBR(self):
@@ -427,6 +429,12 @@ class Rep:
         else:
             self.__printError(f' -> Error rep: No existe el disco {match.group(2)} para reportar.')
 
+    def __reportFile(self):
+        pass
+
+    def __reportLs(self):
+        pass
+
     def __getListEBR(self, start : int, size : int, file : BufferedRandom) -> ListEBR:
         listEBR : ListEBR = ListEBR(start, size)
         file.seek(start)
@@ -448,7 +456,7 @@ class Rep:
         with open(absolutePathDot, 'w') as file:
             file.write(dot)
         os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
-        os.remove(absolutePath.replace(extension, "dot"))
+        # os.remove(absolutePath.replace(extension, "dot"))
         self.__printSuccess(self.params['name'].lower(), diskname)
 
     def __percentage(self, start, firstEmptyByte, size) -> int or float:
