@@ -1,8 +1,9 @@
 from Language.Scanner import *
-import re
+import os
 
 def scannerTest():
-    input = open('../script.adsj').read()
+    os.system('clear')
+    input = open('../mkdir.adsj').read()
     scanner.input(input)
     while True:
         token = scanner.token()

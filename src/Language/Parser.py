@@ -12,6 +12,13 @@ from Commands.Mkgrp import Mkgrp
 from Commands.Rmgrp import Rmgrp
 from Commands.Mkusr import Mkusr
 from Commands.Rmusr import Rmusr
+from Commands.Mkfile import Mkfile
+from Commands.Cat import Cat
+from Commands.Remove import Remove
+from Commands.Edit import Edit
+from Commands.Remove import Remove
+from Commands.Rename import Rename
+from Commands.Mkdir import Mkdir
 from Commands.Pause import Pause
 from Commands.Rep import Rep
 
@@ -44,6 +51,12 @@ def p_COMMAND(t):
                 | RMGRP
                 | MKUSR
                 | RMUSR
+                | MKFILE
+                | CAT
+                | REMOVE
+                | EDIT
+                | RENAME
+                | MKDIR
                 | PAUSE
                 | REP
                 | COMMENTARY'''
@@ -290,6 +303,102 @@ def p_RMUSR(t):
         t[0] = Rmusr(t.lineno(1), t.lexpos(1))
         t[0].setParams({})
         t[0].exec()
+
+def p_MKFILE(t):
+    '''MKFILE   : RW_mkfile MKFILEPARAMS
+                | RW_mkfile'''
+
+def p_MKFILEPARAMS(t):
+    '''MKFILEPARAMS : MKFILEPARAMS MKFILEPARAM
+                    | MKFILEPARAM'''
+
+def p_MKFILEPARAM(t):
+    '''MKFILEPARAM  : RW_path TK_equ TK_path
+                    | RW_size TK_equ TK_number
+                    | RW_cont TK_equ TK_path
+                    | RW_r'''
+
+def p_CAT(t):
+    '''CAT  : RW_cat CATFILES
+            | RW_cat'''
+    if len(t) != 2:
+        t[0] = Cat(t.lineno(1), t.lexpos(1))
+        t[0].setParams(t[2])
+        t[0].exec()
+    else:
+        t[0] = Cat(t.lineno(1), t.lexpos(1))
+        t[0].setParams([])
+        t[0].exec()
+
+def p_CATFILES(t):
+    '''CATFILES : CATFILES CATFILE
+                | CATFILE'''
+    if len(t) != 2:
+        t[1].append(t[2])
+        t[0] = t[1]
+    else:
+        t[0] = [t[1]]
+
+def p_CATFILE(t):
+    '''CATFILE  : RW_fileN TK_equ TK_path'''
+    t[0] = [t[1][-1], t[3]]
+
+def p_REMOVE(t):
+    '''REMOVE   : RW_remove RW_path TK_equ TK_path
+                | RW_remove'''
+
+def p_EDIT(t):
+    '''EDIT : RW_edit EDITPARAMS
+            | RW_edit'''
+
+def p_EDITPARAMS(t):
+    '''EDITPARAMS   : EDITPARAMS EDITPARAM
+                    | EDITPARAM'''
+
+def p_EDITPARAM(t):
+    '''EDITPARAM    : RW_path TK_equ TK_path
+                    | RW_cont TK_equ TK_path'''
+
+def p_RENAME(t):
+    '''RENAME   : RW_rename RENAMEPARAMS
+                | RW_rename'''
+
+def p_RENAMEPARAMS(t):
+    '''RENAMEPARAMS : RENAMEPARAMS RENAMEPARAM
+                    | RENAMEPARAM'''
+
+def p_RENAMEPARAM(t):
+    '''RENAMEPARAM  : RW_path TK_equ TK_path
+                    | RW_name TK_equ TK_id'''
+
+def p_MKDIR(t):
+    '''MKDIR    : RW_mkdir MKDIRPARAMS
+                | RW_mkdir'''
+    if len(t) != 2:
+        t[0] = Mkdir(t.lineno(1), t.lexpos(1))
+        t[0].setParams(t[2])
+        t[0].exec()
+    else:
+        t[0] = Mkdir(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
+
+def p_MKDIRPARAMS(t):
+    '''MKDIRPARAMS  : MKDIRPARAMS MKDIRPARAM
+                    | MKDIRPARAM'''
+    if len(t) != 2:
+        t[1][t[2][0]] = t[2][1]
+        t[0] = t[1]
+    else:
+        t[0] = {'r': False, t[1][0]: t[1][1]}
+
+def p_MKDIRPARAM(t):
+    '''MKDIRPARAM   : RW_path TK_equ TK_path
+                    | RW_r'''
+    if t[1][1:].lower().strip() == 'path':
+        t[0] = ['path', t[3]]
+    elif t[1][1:].lower().strip() == 'r':
+        t[0] = ['r', True]
 
 def p_PAUSE(t):
     '''PAUSE : RW_pause'''
