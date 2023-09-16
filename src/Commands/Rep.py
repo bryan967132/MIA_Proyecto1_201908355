@@ -456,7 +456,7 @@ class Rep:
         with open(absolutePathDot, 'w') as file:
             file.write(dot)
         os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
-        # os.remove(absolutePath.replace(extension, "dot"))
+        os.remove(absolutePath.replace(extension, "dot"))
         self.__printSuccess(self.params['name'].lower(), diskname)
 
     def __percentage(self, start, firstEmptyByte, size) -> int or float:

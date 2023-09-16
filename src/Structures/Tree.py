@@ -274,7 +274,6 @@ class Tree:
                             self.superBlock.free_blocks_count -= 1
                             self.__writeInDisk(pathdsk, partstart, self.superBlock.encode())
                         elif h == 14:
-                            print('CREA INDIRECTO TRIPLE')
                             inode.block[h] = nextFreeBitBlock[0]
                             self.__writeFileInBlockPointers(pathdsk, newBlock, nextFreeBitBlock[0], 3)
                             self.superBlock.free_blocks_count -= 1
@@ -295,7 +294,6 @@ class Tree:
                         self.__writeInDisk(pathdsk, partstart, self.superBlock.encode())
                         break
                     elif h == 14 and inode.block[h] != -1 and self.__validateSpacePointers(inode.block[h], 3):
-                        print('AGREGA EN INDIRECTO TRIPLE')
                         posiblePointer = self.__searchPointer(inode.block[h], 3)
                         if posiblePointer[0] != -1:
                             self.__writeNewBlockInIndirect(pathdsk, posiblePointer[0], newBlock, posiblePointer[1])

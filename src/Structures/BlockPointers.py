@@ -34,10 +34,12 @@ class BlockPointers:
         content = ''
         for r in range(len(self.pointers)):
             content += str(self.pointers[r])
-            if r < len(self.pointers) - 1 and r % 4 != 3:
-                content += ', '
+            if r < len(self.pointers) - 1:
+                content += ','
             if r % 4 == 3:
                 content += '<BR/>'
+            else:
+                content += ' '
         return f'''\n\tn{i}[label = <<TABLE BORDER="0">
         <TR><TD>Bloque Apuntadores {i}</TD></TR>
         <TR><TD><FONT FACE="Consolas">{content}</FONT></TD></TR>
