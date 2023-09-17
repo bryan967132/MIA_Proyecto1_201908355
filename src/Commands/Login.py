@@ -27,7 +27,7 @@ class Login:
             if match.group(2) in disks:
                 if self.params['id'] in disks[match.group(2)]['ids']:
                     absolutePath = disks[match.group(2)]['path']
-                    namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                    namePartition = disks[match.group(2)]['ids'][self.params['id']]['name']
                     with open(absolutePath, 'rb') as file:
                         readed_bytes = file.read(127)
                         mbr = MBR.decode(readed_bytes)
@@ -43,6 +43,7 @@ class Login:
                                         currentLogged['User'] = User(user.id, user.group, user.name, user.password)
                                         currentLogged['Partition'] = namePartition
                                         currentLogged['PathDisk'] = absolutePath
+                                        currentLogged['IDPart'] = self.params['id']
                                         if superBlock.filesystem_type == 3:
                                             file.seek(mbr.partitions[i].start + SuperBlock.sizeOf())
                                             for r in range(superBlock.inodes_count):

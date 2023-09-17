@@ -42,7 +42,7 @@ class Mount:
                             file.write('1'.encode('utf-8'))
                         thisDisk = disks[os.path.basename(absolutePath).split('.')[0]]
                         newID = f'55{thisDisk["nextId"]}' + os.path.basename(absolutePath).split(".")[0]
-                        thisDisk['ids'][newID] = self.params["name"]
+                        thisDisk['ids'][newID] = {'name': self.params["name"], 'mkdirs': []}
                         thisDisk['nextId'] += 1
                         self.__printSuccess(os.path.basename(absolutePath).split('.')[0], self.params['name'], newID, mbr.partitions[i].type)
                         return
@@ -59,7 +59,7 @@ class Mount:
                                 file.write('1'.encode('utf-8'))
                             thisDisk = disks[os.path.basename(absolutePath).split(".")[0]]
                             newID = f'55{thisDisk["nextId"]}' + os.path.basename(absolutePath).split(".")[0]
-                            thisDisk['ids'][newID] = self.params["name"]
+                            thisDisk['ids'][newID] = {'name': self.params["name"], 'mkdirs': []}
                             thisDisk['nextId'] += 1
                             self.__printSuccess(os.path.basename(absolutePath).split('.')[0], self.params['name'], newID, 'L')
                             return

@@ -32,5 +32,6 @@ class Logout:
             currentLogged['User'] = None
             currentLogged['Partition'] = None
             currentLogged['PathDisk'] = None
+            currentLogged['IDPart'] = None
         else:
             print(f"\033[31m -> Error logout: No hay ningún usuario loggeado actualmente. [{self.line}:{self.column}]\033[0m")

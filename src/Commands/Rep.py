@@ -191,7 +191,7 @@ class Rep:
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']
-                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]['name']
                 with open(absolutePath, 'rb') as file:
                     readed_bytes = file.read(127)
                     mbr = MBR.decode(readed_bytes)
@@ -243,7 +243,7 @@ class Rep:
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']
-                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]['name']
                 with open(absolutePath, 'rb') as file:
                     readed_bytes = file.read(127)
                     mbr = MBR.decode(readed_bytes)
@@ -275,7 +275,7 @@ class Rep:
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']
-                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]['name']
                 with open(absolutePath, 'rb') as file:
                     readed_bytes = file.read(127)
                     mbr = MBR.decode(readed_bytes)
@@ -309,7 +309,7 @@ class Rep:
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']
-                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]['name']
                 with open(absolutePath, 'rb') as file:
                     readed_bytes = file.read(127)
                     mbr = MBR.decode(readed_bytes)
@@ -340,7 +340,7 @@ class Rep:
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']
-                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]['name']
                 with open(absolutePath, 'rb') as file:
                     readed_bytes = file.read(127)
                     mbr = MBR.decode(readed_bytes)
@@ -371,7 +371,7 @@ class Rep:
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']
-                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]['name']
                 with open(absolutePath, 'rb') as file:
                     readed_bytes = file.read(127)
                     mbr = MBR.decode(readed_bytes)
@@ -392,7 +392,7 @@ class Rep:
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']
-                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]['name']
                 with open(absolutePath, 'rb') as file:
                     readed_bytes = file.read(127)
                     mbr = MBR.decode(readed_bytes)
@@ -437,7 +437,7 @@ class Rep:
         if match.group(2) in disks:
             if self.params['id'] in disks[match.group(2)]['ids']:
                 absolutePath = disks[match.group(2)]['path']
-                namePartition = disks[match.group(2)]['ids'][self.params['id']]
+                namePartition = disks[match.group(2)]['ids'][self.params['id']]['name']
                 with open(absolutePath, 'rb') as file:
                     readed_bytes = file.read(127)
                     mbr = MBR.decode(readed_bytes)
