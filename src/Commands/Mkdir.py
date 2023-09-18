@@ -44,6 +44,16 @@ class Mkdir:
                                         self.__printError(f" -> Error mkdir: No se creó la carpeta '{self.params['path']}', no existe la ruta donde intentó crearse.")
                                         return
                                 tree.mkdir(self.params['path'], currentLogged['PathDisk'])
+                            if superBlock.filesystem_type == 3:
+                                file.seek(mbr.partitions[i].start + SuperBlock.sizeOf())
+                                for r in range(superBlock.inodes_count):
+                                    readed_bytes = file.read(Journal.sizeOf())
+                                    if readed_bytes == Journal.sizeOf() * b'\x00':
+                                        with open(currentLogged['PathDisk'], 'r+b') as file:
+                                            file.seek(mbr.partitions[i].start + SuperBlock.sizeOf() + r * Journal.sizeOf())
+                                            file.write(Journal('mkdir', f'{self.params["path"]}', '', datetime.datetime.now()).encode())
+                                            break
+                            tree.writeInDisk(currentLogged['PathDisk'], mbr.partitions[i].start, superBlock.encode())
                             dirExists.append(self.params['path'])
                             self.__printSuccess(f' -> mkdir: Nueva carpeta creada exitosamente \'{self.params["path"]}\'')
             else:
