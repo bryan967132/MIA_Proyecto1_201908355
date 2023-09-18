@@ -214,23 +214,15 @@ class Rep:
         <TR><TD ALIGN="LEFT">atime:</TD><TD ALIGN="LEFT">{inode.atime}</TD></TR>
         <TR><TD ALIGN="LEFT">ctime:</TD><TD ALIGN="LEFT">{inode.ctime}</TD></TR>
         <TR><TD ALIGN="LEFT">mtime:</TD><TD ALIGN="LEFT">{inode.mtime}</TD></TR>'''
-                                    for i in range(len(inode.block)):
-                                        dot += f'\n\t\t<TR><TD ALIGN="LEFT">apt{i + 1}:</TD><TD ALIGN="LEFT">{inode.block[i]}</TD></TR>'
+                                    for r in range(len(inode.block)):
+                                        dot += f'\n\t\t<TR><TD ALIGN="LEFT">apt{r + 1}:</TD><TD ALIGN="LEFT">{inode.block[r]}</TD></TR>'
                                     dot += f'''
         <TR><TD ALIGN="LEFT">type:</TD><TD ALIGN="LEFT">{inode.type}</TD></TR>
         <TR><TD ALIGN="LEFT">perm:</TD><TD ALIGN="LEFT">{inode.perm}</TD></TR>
     </TABLE>>];'''
-                            dot += '\n'
-                            nodes = ''
-                            for i in range(len(bm_inodes)):
-                                if bm_inodes[i] == '1':
-                                    if nodes != '':
-                                        nodes += ' -> '
-                                    else:
-                                        nodes += '\t'
-                                    nodes += 'n' + str(i)
-                            dot += nodes
-                            dot += ';\n}'
+                                    if i > 0:
+                                        dot += f'\n\tn{i - 1} -> n{i};'
+                            dot += '\n}'
                             self.__generateFile(dot, f'({namePartition}: {match.group(2)})')
                             return
             else:
@@ -254,15 +246,11 @@ class Rep:
                             tree: Tree = Tree(superBlock, file)
                             blocks = tree.getBlocks()
                             dot = 'digraph Blocks{\n\tnode [shape=box];\n\trankdir=LR;'
-                            for i in blocks:
-                                dot += f'{i[1].getDotB(i[0])}'
-                            blocksDot = ''
-                            for i in blocks:
-                                if blocksDot != '':
-                                    blocksDot += ' -> '
-                                blocksDot += f'n{i[0]}'
-                            dot += '\n\t' + blocksDot
-                            dot += ';\n}'
+                            for i in range(len(blocks)):
+                                dot += f'{blocks[i][1].getDotB(blocks[i][0])}'
+                                if i > 0:
+                                    dot +=  f'\n\tn{blocks[i - 1][0]} -> n{blocks[i][0]};'
+                            dot += '\n}'
                             self.__generateFile(dot, f'({namePartition}: {match.group(2)})')
                             return
             else:

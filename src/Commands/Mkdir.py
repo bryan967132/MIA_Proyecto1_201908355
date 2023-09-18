@@ -23,8 +23,10 @@ class Mkdir:
                             file.seek(mbr.partitions[i].start)
                             superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
                             tree: Tree = Tree(superBlock, file)
-                            if not self.params['r'] and  not tree.searchdir(self.params['path']) and len([i for i in self.params['path'].split('/') if i != '']) > 1:
-                                self.__printError(f" -> Error mkdir: No se creó la carpeta '{self.params['path']}', no existe la ruta donde intentó crearse.")
+                            disk = disks[os.path.basename(currentLogged['PathDisk']).split('.')[0]]
+                            dirExists = disk['ids'][currentLogged['IDPart']]['mkdirs']
+                            if self.params['path'] in dirExists:
+                                self.__printError(f" -> Error mkdir: No se creó la carpeta '{self.params['path']}' porque ya existe.")
                                 return
                             if self.params['r']:
                                 dir = [i for i in self.params['path'].split('/') if i != '']
@@ -32,10 +34,17 @@ class Mkdir:
                                 while c < len(dir):
                                     tmpDir = [dir[i] for i in range(c + 1)]
                                     if not tree.searchdir('/' + '/'.join(tmpDir)):
-                                        tree.mkdir('/' + '/'.join(tmpDir), currentLogged['PathDisk'], mbr.partitions[i].start)
+                                        tree.mkdir('/' + '/'.join(tmpDir), currentLogged['PathDisk'])
                                     c += 1
                             else:
-                                tree.mkdir(self.params['path'], currentLogged['PathDisk'], mbr.partitions[i].start)
+                                dir = [i for i in self.params['path'].split('/') if i != '']
+                                if len(dir) > 1:
+                                    tmpDir = [dir[i] for i in range(len(dir) - 1)]
+                                    if not tree.searchdir('/' + '/'.join(tmpDir)) and len([i for i in self.params['path'].split('/') if i != '']) > 1:
+                                        self.__printError(f" -> Error mkdir: No se creó la carpeta '{self.params['path']}', no existe la ruta donde intentó crearse.")
+                                        return
+                                tree.mkdir(self.params['path'], currentLogged['PathDisk'])
+                            dirExists.append(self.params['path'])
                             self.__printSuccess(f' -> mkdir: Nueva carpeta creada exitosamente \'{self.params["path"]}\'')
             else:
                 self.__printError(f" -> Error mkdir: Faltan parámetros obligatorios para crear un directorio.")
