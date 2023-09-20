@@ -33,15 +33,14 @@ class Mkdir:
                                 c = 0
                                 while c < len(dir):
                                     tmpDir = [dir[i] for i in range(c + 1)]
-                                    if not ('/' + '/'.join(tmpDir)) in dirExists:
+                                    if not tree.searchdir('/' + '/'.join(tmpDir)):
                                         tree.mkdir('/' + '/'.join(tmpDir), currentLogged['PathDisk'])
-                                        dirExists.append('/' + '/'.join(tmpDir))
                                     c += 1
                             else:
                                 dir = [i for i in self.params['path'].split('/') if i != '']
                                 if len(dir) > 1:
                                     tmpDir = [dir[i] for i in range(len(dir) - 1)]
-                                    if not ('/' + '/'.join(tmpDir)) in dirExists and len([i for i in self.params['path'].split('/') if i != '']) > 1:
+                                    if not tree.searchdir('/' + '/'.join(tmpDir)) and len([i for i in self.params['path'].split('/') if i != '']) > 1:
                                         self.__printError(f" -> Error mkdir: No se creó la carpeta '{self.params['path']}', no existe la ruta donde intentó crearse.")
                                         return
                                 tree.mkdir(self.params['path'], currentLogged['PathDisk'])
