@@ -138,40 +138,43 @@ class Tree:
 # ================================== READ CONTENT ==================================
 
     def readFile(self, path: str) -> Tuple[str, bool]:
-        dir = [i for i in path.split('/') if i != '']
-        return self.__readFileInInodes(0, dir)
+        try:
+            dir = [i for i in path.split('/') if i != '']
+            return self.__readFileInInodes(0, dir)
+        except:
+            return '', True
 
     def __readFileInInodes(self, i, path: List[str]) -> Tuple[str, bool]:
         self.file.seek(self.superBlock.inode_start + i * InodesTable.sizeOf())
         inode: InodesTable = InodesTable.decode(self.file.read(InodesTable.sizeOf()))
         content = ''
         founded = False
-        for p in range(len(inode.block)):
-            if inode.block[p] != -1:
-                if p < 12:
-                    if inode.type == '0':
+        if inode.type == '0':
+            for p in range(len(inode.block)):
+                if inode.block[p] != -1:
+                    if p < 12:
                         content, founded = self.__readFileInBlockFolder(inode.block[p], path)
                         if founded:
                             return content, founded
-                    else:
+                    elif p == 12:
+                        content, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 1)
+                    elif p == 13:
+                        content, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 2)
+                    elif p == 14:
+                        content, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 3)
+        else:
+            for p in range(len(inode.block)):
+                if inode.block[p] != -1:
+                    if p < 12:
                         cont, founded = self.__readFileInBlockFile(inode.block[p])
                         content += cont
-                elif p == 12:
-                    if inode.type == '0':
-                        content, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 1)
-                    else:
+                    elif p == 12:
                         cont, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 1)
                         content += cont
-                elif p == 13:
-                    if inode.type == '0':
-                        content, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 2)
-                    else:
+                    elif p == 13:
                         cont, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 2)
                         content += cont
-                elif p == 14:
-                    if inode.type == '0':
-                        content, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 3)
-                    else:
+                    elif p == 14:
                         cont, founded = self.__readFileInBlockPointers(inode.block[p], path, inode.type, 3)
                         content += cont
         return content, founded
@@ -227,11 +230,16 @@ class Tree:
         if inode.type == '0':
             for p in range(len(inode.block)):
                 if inode.block[p] != -1:
-                    writed = self.__writeFileInBlockFolder(inode.block[p], path, pathdsk, newContent, partstart)
-                    if writed:
-                        return
+                    if p < 12:
+                        writed = self.__writeFileInBlockFolder(inode.block[p], path, pathdsk, newContent, partstart)
+                        if writed:
+                            return
+                    elif p == 12:
+                        pass
+                    elif p == 14:
+                        pass
         else:
-            blocksFile: Tuple[int, BlockFile]
+            blocksFile: Tuple[int, BlockFile] = -1, None
             for p in range(len(inode.block)):
                 if inode.block[p] != -1:
                     if p < 12:
@@ -243,6 +251,12 @@ class Tree:
                     elif p == 14:
                         blocksFile = self.__writeFileInBlockPointers3(pathdsk, inode.block[p], 3)
             num, block = blocksFile
+            if not block:
+                block = BlockFile(['' for i in range(64)])
+                num = self.__findNextFreeBlock(1)[0]
+                self.__writeNewBlock(pathdsk, num, block)
+                inode.block[0] = num
+                self.__rewriteInode(pathdsk, i, inode)
             contents = [[r for r in block.content if r != '']]
             for z in newContent:
                 if len(contents[-1]) < 64:
@@ -652,8 +666,7 @@ class Tree:
                         firstBlockFolder.content[1] = Content('..'.ljust(12), self.prev)
                         self.__writeNewBlock(pathdsk, newInode.block[0], firstBlockFolder)
                     else:
-                        newInode: InodesTable = InodesTable()
-                        newInode.type = '1'
+                        newInode: InodesTable = InodesTable(type = '1', block = [-1 for i in range(15)])
                         self.__writeNewInode(pathdsk, blockFolder.content[p].inodo, newInode)
                     return True
         return False

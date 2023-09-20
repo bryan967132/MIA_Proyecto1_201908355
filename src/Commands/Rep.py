@@ -434,13 +434,18 @@ class Rep:
                             file.seek(mbr.partitions[i].start)
                             superBlock = SuperBlock.decode(file.read(SuperBlock.sizeOf()))
                             tree: Tree = Tree(superBlock, file)
-                            content, founded = tree.readFile(self.params['ruta'])
-                            if founded:
-                                with open(self.params['path'], 'w') as file:
-                                    file.write(content)
-                                self.__printSuccess(self.params['name'].lower(), f'({namePartition}: {match.group(2)})')
+                            disk = disks[match.group(2)]
+                            dirExists = disk['ids'][currentLogged['IDPart']]['mkdirs']
+                            if self.params['ruta'] in dirExists:
+                                content, founded = tree.readFile(self.params['ruta'])
+                                if founded:
+                                    with open(self.params['path'], 'w') as file:
+                                        file.write(content.replace('&lt;', '<').replace('&gt;', '>'))
+                                    self.__printSuccess(self.params['name'].lower(), f'({namePartition}: {match.group(2)})')
+                                else:
+                                    self.__printError(f' -> Error rep: No existe el archivo {self.params["ruta"]}.')
                             else:
-                                self.__printError(f' -> Error rep: No existe el archivo /users.txt.')
+                                self.__printError(f' -> Error rep: No existe el archivo {self.params["ruta"]}.')
                             return
             else:
                 self.__printError(f' -> Error rep: No existe el código de partición {self.params["id"]} en el disco {match.group(2)} para iniciar sesión.')
@@ -471,7 +476,7 @@ class Rep:
         with open(absolutePathDot, 'w') as file:
             file.write(dot)
         os.system(f'dot -T{extension} "{absolutePathDot}" -o "{absolutePath}"')
-        os.remove(absolutePath.replace(extension, "dot"))
+        # os.remove(absolutePath.replace(extension, "dot"))
         self.__printSuccess(self.params['name'].lower(), diskname)
 
     def __percentage(self, start, firstEmptyByte, size) -> int or float:

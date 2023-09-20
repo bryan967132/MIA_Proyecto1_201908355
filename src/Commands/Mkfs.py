@@ -44,6 +44,7 @@ class Mkfs:
                             else:
                                 self.__ext3(absolutePath, mbr.partitions[i])
                             self.__printSuccess(match.group(2), namePartition, self.params['id'], mbr.partitions[i].type, self.params['fs'])
+                            disks[match.group(2)]['ids'][self.params['id']]['mkdirs'].append('/users.txt')
                             return
             else:
                 self.__printError(f' -> Error mkfs: No existe el código de partición {self.params["id"]} para formatear en el disco {match.group(2)}.')

@@ -307,16 +307,33 @@ def p_RMUSR(t):
 def p_MKFILE(t):
     '''MKFILE   : RW_mkfile MKFILEPARAMS
                 | RW_mkfile'''
+    if len(t) != 2:
+        t[0] = Mkfile(t.lineno(1), t.lexpos(1))
+        t[0].setParams(t[2])
+        t[0].exec()
+    else:
+        t[0] = Mkfile(t.lineno(1), t.lexpos(1))
+        t[0].setParams({})
+        t[0].exec()
 
 def p_MKFILEPARAMS(t):
     '''MKFILEPARAMS : MKFILEPARAMS MKFILEPARAM
                     | MKFILEPARAM'''
+    if len(t) != 2:
+        t[1][t[2][0]] = t[2][1]
+        t[0] = t[1]
+    else:
+        t[0] = {'r': False, t[1][0]: t[1][1]}
 
 def p_MKFILEPARAM(t):
     '''MKFILEPARAM  : RW_path TK_equ TK_path
                     | RW_size TK_equ TK_number
                     | RW_cont TK_equ TK_path
                     | RW_r'''
+    if t[1][1:].lower().strip() == 'r':
+        t[0] = ['r', True]
+    else:
+        t[0] = [t[1][1:].lower().strip(), t[3]]
 
 def p_CAT(t):
     '''CAT  : RW_cat CATFILES
