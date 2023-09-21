@@ -53,7 +53,7 @@ class Login:
                                                         file.seek(mbr.partitions[i].start + SuperBlock.sizeOf() + r * Journal.sizeOf())
                                                         file.write(Journal('login', '', f'{user.name},{user.password},{self.params["id"]}', datetime.datetime.now()).encode())
                                                         break
-                                        self.__printSuccess(f' -> login: Sesión iniciada exitosamentes. ({user.name})')
+                                        self.__printSuccess(f' -> login: Sesión iniciada exitosamente. ({user.name})')
                                     else:
                                         self.__printError(f' -> Error login: El usuario {self.params["user"]} no existe en el sistema.')
                                     return

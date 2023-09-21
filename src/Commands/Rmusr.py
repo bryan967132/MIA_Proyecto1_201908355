@@ -11,7 +11,7 @@ class Rmusr:
     def exec(self):
         if currentLogged['User']:
             if currentLogged['User'].name == 'root':
-                print(currentLogged['User'])
+                pass
             else:
                 self.__printError(f" -> Error rmusr: Solo el usuario 'root' puede eliminar usuarios.")
         else:

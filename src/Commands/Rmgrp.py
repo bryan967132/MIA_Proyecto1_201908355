@@ -11,7 +11,7 @@ class Rmgrp:
     def exec(self):
         if currentLogged['User']:
             if currentLogged['User'].name == 'root':
-                print(currentLogged['User'])
+                pass
             else:
                 self.__printError(f" -> Error rmgrp: Solo el usuario 'root' puede eliminar grupos.")
         else:
