@@ -470,7 +470,7 @@ def p_COMMENTARY(t):
     t[0].exec()
 
 def p_error(t):
-    print(f"\033[31m -> Error de Sintaxis: {t.type} = {t.value}. [{t.lineno}:{t.lexpos}]\033[0m")
+    print(f"\033[31m -> Error: Comando sin reconocer. ({t.type} = {t.value}) [{t.lineno}:{t.lexpos}]\033[0m")
 
 from Language.Scanner import *
 import ply.yacc as Parser
