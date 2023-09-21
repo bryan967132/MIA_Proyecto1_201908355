@@ -1,6 +1,7 @@
 from Structures.ListEBR import ListEBR
 from Structures.MBR import *
 from Structures.EBR import *
+from Env.Env import *
 from io import BufferedRandom
 from typing import List
 import os
@@ -53,6 +54,10 @@ class Fdisk:
                             return
                     mbr.partitions.pop(i)
                     mbr.partitions.append(Partition())
+                    for k, v in disks[os.path.basename(absolutePath).split(".")[0]]['ids'].items():
+                        if 'name' in v and v['name'] == self.params['name']:
+                            disks[os.path.basename(absolutePath).split(".")[0]]['ids'].pop(k)
+                            break
                     with open(absolutePath, 'r+b') as file:
                         file.seek(0)
                         file.write(mbr.encode())
@@ -75,6 +80,10 @@ class Fdisk:
                             elif confirm.lower().strip() == 'n':
                                 return
                         delEBR = listEBR.delete(ebr.name)
+                        for k, v in disks[os.path.basename(absolutePath).split(".")[0]]['ids'].items():
+                            if 'name' in v and v['name'] == self.params['name']:
+                                disks[os.path.basename(absolutePath).split(".")[0]]['ids'].pop(k)
+                                break
                         with open(absolutePath, 'r+b') as file:
                             file.seek(delEBR.start)
                             file.write(b'\x00' * 30)
@@ -112,10 +121,10 @@ class Fdisk:
                     sign = ""
                     if bytesAdds < 0:
                         if abs(bytesAdds) == mbr.partitions[i].size:
-                            self.__printError(f' ->  Error fdisk: Intenta quitar todo el espacio del disponible en la partición \'{mbr.partitions[i].name.strip()}\'.')
+                            self.__printError(f' -> Error fdisk: Intenta quitar todo el espacio del disponible en la partición \'{mbr.partitions[i].name.strip()}\'.')
                             return
                         if abs(bytesAdds) > mbr.partitions[i].size:
-                            self.__printError(f' ->  Error fdisk: Intenta quitar más espacio del disponible en la partición \'{mbr.partitions[i].name.strip()}\'.')
+                            self.__printError(f' -> Error fdisk: Intenta quitar más espacio del disponible en la partición \'{mbr.partitions[i].name.strip()}\'.')
                             return
                         msg = "reducido"
                         sign = "-"
@@ -145,10 +154,10 @@ class Fdisk:
                         sign = ""
                         if bytesAdds < 0:
                             if abs(bytesAdds) == ebr.size:
-                                self.__printError(f' ->  Error fdisk: Intenta quitar todo el espacio del disponible en la partición \'{ebr.name.strip()}\'.')
+                                self.__printError(f' -> Error fdisk: Intenta quitar todo el espacio del disponible en la partición \'{ebr.name.strip()}\'.')
                                 return
                             if abs(bytesAdds) > ebr.size:
-                                self.__printError(f' ->  Error fdisk: Intenta quitar más espacio del disponible en la partición \'{ebr.name.strip()}\'.')
+                                self.__printError(f' -> Error fdisk: Intenta quitar más espacio del disponible en la partición \'{ebr.name.strip()}\'.')
                                 return
                             msg = "reducido"
                             sign = "-"

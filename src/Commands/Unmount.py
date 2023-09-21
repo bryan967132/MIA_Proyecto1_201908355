@@ -37,8 +37,7 @@ class Unmount:
                             with open(absolutePath, 'r+b') as file:
                                 file.seek(19 + i * 27)
                                 file.write('0'.encode('utf-8'))
-                            thisDisk = disks[os.path.basename(absolutePath).split('.')[0]]
-                            del thisDisk['ids'][self.params['id']]
+                            del disks[os.path.basename(absolutePath).split('.')[0]]['ids'][self.params['id']]
                             self.__printSuccess(os.path.basename(absolutePath).split('.')[0], self.params['id'], namePartition, mbr.partitions[i].type)
                             return
                     i = self.__getExtended(mbr.partitions)
@@ -49,11 +48,10 @@ class Unmount:
                                 with open(absolutePath, 'r+b') as file:
                                     file.seek(ebr.start)
                                     file.write('0'.encode('utf-8'))
-                                thisDisk = disks[os.path.basename(absolutePath).split('.')[0]]
-                                del thisDisk['ids'][self.params['id']]
+                                del disks[os.path.basename(absolutePath).split('.')[0]]['ids'][self.params['id']]
                                 self.__printSuccess(os.path.basename(absolutePath).split('.')[0], self.params['id'], namePartition, 'L')
                                 return
-                    self.__printError(f' -> Error unmount: Intenta desmontar una partición inexistente en {match.group(2)}.')
+                    self.__printError(f' -> Error unmount: Intenta desmontar una partición desmontada o inexistente en {match.group(2)}.')
                     return
             self.__printError(f' -> Error unmount: No existe el código de partición {self.params["id"]} para desmontar en el disco {match.group(2)}.')
             return
